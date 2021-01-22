@@ -1,9 +1,9 @@
 <?php
 
-namespace DMT\Test\Aura\Psr;
+namespace DMT\Test\Aura\Psr\Message;
 
 use Aura\Web\Request\Url;
-use DMT\Aura\Psr\Uri;
+use DMT\Aura\Psr\Message\Uri;
 use Http\Psr7Test\UriIntegrationTest;
 use Psr\Http\Message\UriInterface;
 

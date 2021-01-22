@@ -1,6 +1,6 @@
 <?php
 
-namespace DMT\Aura\Psr;
+namespace DMT\Aura\Psr\Message;
 
 use Aura\Web\Request\Content as RequestContent;
 use Aura\Web\Request\Values;

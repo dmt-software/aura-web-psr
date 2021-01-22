@@ -1,9 +1,9 @@
 <?php
 
-namespace DMT\Test\Aura\Psr;
+namespace DMT\Test\Aura\Psr\Message;
 
 use Aura\Web\Request\Values;
-use DMT\Aura\Psr\UploadedFile;
+use DMT\Aura\Psr\Message\UploadedFile;
 use Http\Psr7Test\UploadedFileIntegrationTest;
 
 class UploadedFileTest extends UploadedFileIntegrationTest

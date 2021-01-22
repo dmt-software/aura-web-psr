@@ -1,10 +1,10 @@
 <?php
 
-namespace DMT\Test\Aura\Psr;
+namespace DMT\Test\Aura\Psr\Message;
 
 use Aura\Web\WebFactory;
-use DMT\Aura\Psr\Response;
-use DMT\Aura\Psr\Stream;
+use DMT\Aura\Psr\Message\Response;
+use DMT\Aura\Psr\Message\Stream;
 use Http\Psr7Test\ResponseIntegrationTest;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;

@@ -1,11 +1,11 @@
 <?php
 
-namespace DMT\Test\Aura\Psr;
+namespace DMT\Test\Aura\Psr\Message;
 
 use Aura\Web\Request\Values;
 use Aura\Web\WebFactory;
-use DMT\Aura\Psr\ServerRequest;
-use DMT\Aura\Psr\UploadedFile;
+use DMT\Aura\Psr\Message\ServerRequest;
+use DMT\Aura\Psr\Message\UploadedFile;
 use Http\Psr7Test\ServerRequestIntegrationTest;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;

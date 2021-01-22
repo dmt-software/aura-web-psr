@@ -1,6 +1,6 @@
 <?php
 
-namespace DMT\Aura\Psr;
+namespace DMT\Aura\Psr\Message;
 
 use Aura\Web\Exception\InvalidComponent;
 use Aura\Web\Request\Url as AuraUrl;
