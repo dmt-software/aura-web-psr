@@ -3,8 +3,7 @@
 namespace DMT\Test\Aura\Psr\Message;
 
 use Aura\Web\Request\Values;
-use Aura\Web\WebFactory;
-use DMT\Aura\Psr\Message\ServerRequest;
+use DMT\Aura\Psr\Factory\ServerRequestFactory;
 use DMT\Aura\Psr\Message\UploadedFile;
 use Http\Psr7Test\ServerRequestIntegrationTest;
 use Psr\Http\Message\ServerRequestInterface;
@@ -19,9 +18,7 @@ class ServerRequestTest extends ServerRequestIntegrationTest
      */
     public function createSubject(): ServerRequestInterface
     {
-        $request = (new WebFactory($GLOBALS))->newRequest();
-
-        return new ServerRequest($request);
+        return (new ServerRequestFactory())->createServerRequest('GET', '/', $_SERVER);
     }
 
     /**

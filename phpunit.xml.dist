@@ -20,4 +20,8 @@
             <directory>./src/</directory>
         </whitelist>
     </filter>
+    <php>
+        <server name="REQUEST_METHOD" value="GET"/>
+        <const name="URI_FACTORY" value="DMT\Aura\Psr\Factory\UriFactory"/>
+    </php>
 </phpunit>

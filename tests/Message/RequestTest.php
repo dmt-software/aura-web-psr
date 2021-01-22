@@ -5,11 +5,9 @@ namespace DMT\Test\Aura\Psr\Message;
 use Aura\Web\WebFactory;
 use DMT\Aura\Psr\Message\Request;
 use DMT\Aura\Psr\Message\Stream;
-use DMT\Aura\Psr\Message\Uri;
 use Http\Psr7Test\RequestIntegrationTest;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
-use Psr\Http\Message\UriInterface;
 
 class RequestTest extends RequestIntegrationTest
 {
@@ -74,19 +72,6 @@ class RequestTest extends RequestIntegrationTest
         $request = (new WebFactory([]))->newRequest();
 
         return new Request($request);
-    }
-
-    /**
-     * Build an uri.
-     *
-     * @param string $uri
-     * @return UriInterface
-     */
-    protected function buildUri($uri): UriInterface
-    {
-        $requestUrl = (new WebFactory([]))->newRequestUrl();
-
-        return new Uri($requestUrl, $uri);
     }
 
     /**

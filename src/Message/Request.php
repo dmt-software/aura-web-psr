@@ -3,6 +3,7 @@
 namespace DMT\Aura\Psr\Message;
 
 use Aura\Web\Request as AuraRequest;
+use Aura\Web\WebFactory;
 use DMT\Aura\Psr\Factory\UriFactory;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UriInterface;
@@ -17,12 +18,13 @@ class Request implements RequestInterface
     use MessageTrait;
 
     /** @var AuraRequest $request */
-    private $request;
+    protected $request;
     /** @var UriInterface $uri */
-    private $uri;
+    protected $uri;
 
     /**
      * Request constructor.
+     *
      * @param AuraRequest $request The Aura\Web\Request to wrap
      */
     public function __construct(AuraRequest $request)
@@ -36,6 +38,10 @@ class Request implements RequestInterface
      */
     public function getInnerObject(): AuraRequest
     {
+        if (!$this->request) {
+            $this->request = (new WebFactory([]))->newRequest();
+        }
+
         return $this->request;
     }
 
@@ -187,13 +193,14 @@ class Request implements RequestInterface
      * Ensure the immutability of the request.
      *
      * @param array $override
-     * @return self
+     * @return static
      */
     protected function newInstanceWith(array $override = []): self
     {
         $innerRequest = $this->getInnerObject();
 
-        $request = new AuraRequest(
+        $newInstance = clone($this);
+        $newInstance->request = new AuraRequest(
             $override['client'] ?? clone($innerRequest->client),
             $override['content'] ?? clone($innerRequest->content),
             new AuraRequest\Globals(
@@ -210,6 +217,6 @@ class Request implements RequestInterface
             $override['url'] ?? clone($innerRequest->url)
         );
 
-        return new static($request);
+        return $newInstance;
     }
 }

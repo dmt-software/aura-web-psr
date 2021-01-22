@@ -3,6 +3,7 @@
 namespace DMT\Aura\Psr\Message;
 
 use Aura\Web\Request as AuraRequest;
+use DMT\Aura\Psr\Helpers\HelperFactory;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
 
@@ -12,24 +13,43 @@ class ServerRequest extends Request implements ServerRequestInterface
     private $uploadedFiles;
 
     /**
-     * Request constructor.
-     * @param AuraRequest $request The Aura\Web\Request to wrap
+     * ServerRequest constructor.
+     * @param string $method
+     * @param $uri
+     * @param array $serverParams
      */
-    public function __construct(AuraRequest $request)
+    public function __construct(string $method, $uri, array $serverParams = [])
     {
-        parent::__construct($request);
+        $serverParams['REQUEST_METHOD'] = $method;
 
-        $format = '~(application/x\-www\-form\-urlencoded|multipart/form\-data)~i';
-        $contentType = $this->getHeader('Content-Type');
-        if (!preg_grep($format, $contentType) && $request->content->getType() && empty($request->post->get())) {
-            $contents = clone($request->content);
-            $body = $contents->get();
-            if (is_array($body) || $body instanceof \stdClass) {
-                $request->post->exchangeArray((array) $body);
-            }
+        $request = $this->getInnerObject();
+        $request->server->exchangeArray($serverParams);
+
+        if ((string)$uri !== '' && $components = parse_url($uri)) {
+            HelperFactory::getRequestUrlHelper($request->url)->set($components);
         }
+        $this->uri = new Uri($request->url);
+    }
 
-        $this->getUploadedFiles();
+    /**
+     * Create from existing request.
+     *
+     * @param AuraRequest $request
+     * @return static
+     */
+    public static function createFromAuraRequest(AuraRequest $request): self
+    {
+        $instance = new self(
+            $request->server->get('REQUEST_METHOD', 'GET'),
+            $request->url->get(),
+            $request->server->get()
+        );
+
+        $instance->request = $request;
+
+        $instance->getUploadedFiles();
+
+        return $instance;
     }
 
     /**

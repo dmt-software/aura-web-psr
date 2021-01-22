@@ -14,19 +14,6 @@ use Psr\Http\Message\UriInterface;
  */
 class UriFactory implements UriFactoryInterface
 {
-    /** @var WebFactory $webFactory */
-    private $webFactory;
-
-    /**
-     * UriFactory constructor.
-     *
-     * @param WebFactory|null $webFactory
-     */
-    public function __construct(WebFactory $webFactory = null)
-    {
-        $this->webFactory = $webFactory ?? new WebFactory([]);
-    }
-
     /**
      * Create a new URI.
      *
@@ -36,6 +23,10 @@ class UriFactory implements UriFactoryInterface
      */
     public function createUri(string $uri = ''): UriInterface
     {
-        return new Uri($this->webFactory->newRequestUrl(), $uri);
+        if ($uri !== '' && parse_url($uri) === false) {
+            throw new \InvalidArgumentException('illegal uri given');
+        }
+
+        return new Uri((new WebFactory([]))->newRequestUrl(), $uri);
     }
 }
