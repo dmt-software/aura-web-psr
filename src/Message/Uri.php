@@ -4,6 +4,8 @@ namespace DMT\Aura\Psr\Message;
 
 use Aura\Web\Exception\InvalidComponent;
 use Aura\Web\Request\Url as AuraUrl;
+use DMT\Aura\Psr\Helpers\HelperFactory;
+use DMT\Aura\Psr\Helpers\RequestUrlHelper;
 use Psr\Http\Message\UriInterface;
 
 class Uri implements UriInterface
@@ -16,25 +18,24 @@ class Uri implements UriInterface
         'https' => 443,
     ];
 
-    /** @var AuraUrl $url */
-    protected $url;
-    /** @var \ReflectionProperty $components */
-    protected $components;
+    /** @var AuraUrl $requestUrl */
+    protected $requestUrl;
+    /** @var RequestUrlHelper */
+    private $urlWrapper;
 
     /**
      * Uri constructor.
-     * @param AuraUrl $requestUri
+     *
+     * @param AuraUrl $requestUrl
      * @param string|null $uri
      */
-    public function __construct(AuraUrl $requestUri, string $uri = null)
+    public function __construct(AuraUrl $requestUrl, string $uri = null)
     {
-        $this->url = $requestUri;
-
-        $this->components = new \ReflectionProperty(AuraUrl::class, 'parts');
-        $this->components->setAccessible(true);
+        $this->requestUrl = $requestUrl;
+        $this->urlWrapper = HelperFactory::getRequestUrlHelper($requestUrl);
 
         if ($uri) {
-            $this->components->setValue($requestUri, parse_url($uri));
+            $this->urlWrapper->set(parse_url($uri));
         }
     }
 
@@ -43,7 +44,7 @@ class Uri implements UriInterface
      */
     public function getInnerObject(): AuraUrl
     {
-        return $this->url;
+        return $this->requestUrl;
     }
 
 
@@ -190,7 +191,7 @@ class Uri implements UriInterface
             throw new \InvalidArgumentException('invalid scheme given');
         }
 
-        return $this->urlSet('scheme', strtolower($scheme) . '://');
+        return $this->urlSet(PHP_URL_SCHEME, strtolower($scheme) . '://');
     }
 
     /**
@@ -202,7 +203,7 @@ class Uri implements UriInterface
      */
     public function withUserInfo($user, $password = null): self
     {
-        if (!is_string($user)) {
+        if (!is_string($user) || $user === '') {
             throw new \InvalidArgumentException('invalid user given');
         }
 
@@ -211,8 +212,8 @@ class Uri implements UriInterface
         }
 
         return $this
-            ->urlSet('user', $user)
-            ->urlSet('pass', $password);
+            ->urlSet(PHP_URL_USER, $user)
+            ->urlSet(PHP_URL_PASS, $password);
     }
 
     /**
@@ -228,7 +229,7 @@ class Uri implements UriInterface
             throw new \InvalidArgumentException('invalid host given');
         }
 
-        return $this->urlSet('host', $host);
+        return $this->urlSet(PHP_URL_HOST, $host);
     }
 
     /**
@@ -248,7 +249,7 @@ class Uri implements UriInterface
             throw new \InvalidArgumentException('invalid post given');
         }
 
-        return $this->urlSet('port', $port);
+        return $this->urlSet(PHP_URL_PORT, $port);
     }
 
     /**
@@ -264,7 +265,7 @@ class Uri implements UriInterface
             throw new \InvalidArgumentException('invalid path given');
         }
 
-        return $this->urlSet('path', $path);
+        return $this->urlSet(PHP_URL_PATH, $path);
     }
 
     /**
@@ -280,7 +281,7 @@ class Uri implements UriInterface
             throw new \InvalidArgumentException('invalid path given');
         }
 
-        return $this->urlSet('query', $query);
+        return $this->urlSet(PHP_URL_QUERY, $query);
     }
 
     /**
@@ -295,7 +296,7 @@ class Uri implements UriInterface
             throw new \InvalidArgumentException('invalid fragment given');
         }
 
-        return $this->urlSet('fragment', $fragment);
+        return $this->urlSet(PHP_URL_FRAGMENT, $fragment);
     }
 
     /**
@@ -358,7 +359,7 @@ class Uri implements UriInterface
     private function urlGet(int $component, ?string $default = ''): ?string
     {
         try {
-            return $this->url->get($component) ?? $default;
+            return $this->requestUrl->get($component) ?? $default;
         } catch (InvalidComponent $exception) {
             return $default;
         }
@@ -367,23 +368,15 @@ class Uri implements UriInterface
     /**
      * Store a url part.
      *
-     * @param string $component
+     * @param string|int $component
      * @param string|null $value
      * @return static
      */
-    private function urlSet(string $component, ?string $value): self
+    private function urlSet($component, ?string $value): self
     {
-        $components = $this->components->getValue($this->url);
-        $components[$component] = (string)$value;
-
         $newInstance = clone($this);
-        $newInstance->components->setValue($newInstance->url, $components);
-
-        if ($component === 'scheme') {
-            $secure = new \ReflectionProperty(AuraUrl::class, 'secure');
-            $secure->setAccessible(true);
-            $secure->setValue($newInstance->url, $value === 'https');
-        }
+        $newInstance->urlWrapper->set($this->requestUrl->get());
+        $newInstance->urlWrapper->set($component, $value);
 
         return $newInstance;
     }

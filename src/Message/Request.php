@@ -3,6 +3,7 @@
 namespace DMT\Aura\Psr\Message;
 
 use Aura\Web\Request as AuraRequest;
+use DMT\Aura\Psr\Factory\UriFactory;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UriInterface;
 
@@ -115,12 +116,10 @@ class Request implements RequestInterface
     public function withUri(UriInterface $uri, $preserveHost = false): self
     {
         if (!$uri instanceof Uri) {
-            $uri = new Uri(new AuraRequest\Url([]), (string)$uri);
+            $uri = (new UriFactory())->createUri((string)$uri);
         }
 
-        $url = $uri->getInnerObject();
-
-        $request = $this->newInstanceWith(compact('url'));
+        $request = $this->newInstanceWith(['url' => $uri->getInnerObject()]);
         $request->uri = $uri;
 
         if (!$preserveHost || !$this->hasHeader('host')) {
