@@ -11,26 +11,33 @@ use Psr\Http\Message\UriInterface;
 /**
  * Class Request
  *
- * @package DMT\Aura\Psr
+ * @package DMT\Aura\Psr\Message
  */
 class Request implements RequestInterface
 {
     use MessageTrait;
 
-    /** @var AuraRequest $request */
-    protected $request;
+    /** @var AuraRequest $object */
+    protected $object;
     /** @var UriInterface $uri */
     protected $uri;
 
     /**
      * Request constructor.
      *
-     * @param AuraRequest $request The Aura\Web\Request to wrap
+     * @param string $method The HTTP method associated with the request.
+     * @param UriInterface|string $uri The URI associated with the request.
      */
-    public function __construct(AuraRequest $request)
+    public function __construct($method, $uri)
     {
-        $this->request = $request;
-        $this->getUri();
+        $request = $this->getInnerObject();
+        $server = $request->server;
+        $server['REQUEST_METHOD'] = $method;
+
+        if ((string)$uri !== '' && $components = parse_url($uri)) {
+            $this->setObjectProperty($request->url, 'parts', $components);
+        }
+        $this->uri = new Uri($request->url);
     }
 
     /**
@@ -38,11 +45,11 @@ class Request implements RequestInterface
      */
     public function getInnerObject(): AuraRequest
     {
-        if (!$this->request) {
-            $this->request = (new WebFactory([]))->newRequest();
+        if (!$this->object) {
+            $this->object = (new WebFactory([]))->newRequest();
         }
 
-        return $this->request;
+        return $this->object;
     }
 
     /**
@@ -63,11 +70,12 @@ class Request implements RequestInterface
      */
     public function withRequestTarget($requestTarget): self
     {
-        $server = $this->getInnerObject()->server->get();
-        $server['REQUEST_URI'] = $requestTarget;
-        $server = new AuraRequest\Values($server);
+        $instance = clone($this);
 
-        return $this->newInstanceWith(compact('server'));
+        $server = $instance->getInnerObject()->server;
+        $server['REQUEST_URI'] = $requestTarget;
+
+        return $instance;
     }
 
     /**
@@ -93,9 +101,10 @@ class Request implements RequestInterface
             throw new \InvalidArgumentException('Invalid method given');
         }
 
-        return $this->newInstanceWith([
-            'method' => new AuraRequest\Method(['REQUEST_METHOD' => $method], [])
-        ]);
+        $instance = clone($this);
+        $instance->setObjectProperty($instance->getInnerObject()->method, 'value', $method);
+
+        return $instance;
     }
 
     /**
@@ -125,14 +134,15 @@ class Request implements RequestInterface
             $uri = (new UriFactory())->createUri((string)$uri);
         }
 
-        $request = $this->newInstanceWith(['url' => $uri->getInnerObject()]);
-        $request->uri = $uri;
+        $instance = clone($this);
+        $instance->uri = $uri;
+        $instance->setObjectProperty($instance->getInnerObject(), 'url', $uri->getInnerObject());
 
         if (!$preserveHost || !$this->hasHeader('host')) {
-            return $request->updateHostFromUri();
+            return $instance->updateHostFromUri();
         }
 
-        return $request;
+        return $instance;
     }
 
     /**
@@ -154,69 +164,5 @@ class Request implements RequestInterface
         }
 
         return $this->withHeader('host', $host);
-    }
-
-    /**
-     * Get the object to override that contains the protocol version.
-     *
-     * @param string $version
-     * @return array
-     */
-    protected function getProtocolVersionContainer(string $version): array
-    {
-        $server = $this->getInnerObject()->server->get();
-        $server['SERVER_PROTOCOL'] = 'HTTP/' . $version;
-        $server = new AuraRequest\Values($server);
-
-        return compact('server');
-    }
-
-    /**
-     * Get the header container.
-     *
-     * @param array $headerValues
-     * @return array
-     */
-    protected function getHeaderContainer(array $headerValues = []): array
-    {
-        $headers = [];
-        array_walk($headerValues, function ($values, $header) use (&$headers) {
-            if ($values !== null) {
-                $headers[$this->originalHeaderName($header)] = implode(',', $this->normalizeHeaderValue($values));
-            }
-        });
-
-        return ['headers' => new AuraRequest\Headers($headers)];
-    }
-
-    /**
-     * Ensure the immutability of the request.
-     *
-     * @param array $override
-     * @return static
-     */
-    protected function newInstanceWith(array $override = []): self
-    {
-        $innerRequest = $this->getInnerObject();
-
-        $newInstance = clone($this);
-        $newInstance->request = new AuraRequest(
-            $override['client'] ?? clone($innerRequest->client),
-            $override['content'] ?? clone($innerRequest->content),
-            new AuraRequest\Globals(
-                $override['cookies'] ?? clone($innerRequest->cookies),
-                $override['env'] ?? clone($innerRequest->env),
-                $override['files'] ?? clone($innerRequest->files),
-                $override['post'] ?? clone($innerRequest->post),
-                $override['query'] ?? clone($innerRequest->query),
-                $override['server'] ?? clone($innerRequest->server)
-            ),
-            $override['headers'] ?? clone($innerRequest->headers),
-            $override['method'] ?? clone($innerRequest->method),
-            clone($innerRequest->params),
-            $override['url'] ?? clone($innerRequest->url)
-        );
-
-        return $newInstance;
     }
 }

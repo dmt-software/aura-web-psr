@@ -2,8 +2,6 @@
 
 namespace DMT\Aura\Psr\Factory;
 
-use Aura\Web\Request;
-use Aura\Web\WebFactory;
 use DMT\Aura\Psr\Message\ServerRequest;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;

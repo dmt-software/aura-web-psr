@@ -10,7 +10,7 @@ use Psr\Http\Message\StreamInterface;
 /**
  * Class Stream
  *
- * @package DMT\Aura\Psr
+ * @package DMT\Aura\Psr\Message
  */
 class Stream implements StreamInterface
 {

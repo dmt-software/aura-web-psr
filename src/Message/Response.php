@@ -6,12 +6,17 @@ use Aura\Web\Exception\InvalidStatusCode;
 use Aura\Web\Response as AuraResponse;
 use Psr\Http\Message\ResponseInterface;
 
+/**
+ * Class Response
+ *
+ * @package DMT\Aura\Psr\Message
+ */
 class Response implements ResponseInterface
 {
     use MessageTrait;
 
-    /** @var AuraResponse $response */
-    private $response;
+    /** @var AuraResponse $object */
+    private $object;
 
     /**
      * Response constructor.
@@ -19,7 +24,7 @@ class Response implements ResponseInterface
      */
     public function __construct(AuraResponse $response)
     {
-        $this->response = $response;
+        $this->object = $response;
     }
 
     /**
@@ -27,7 +32,7 @@ class Response implements ResponseInterface
      */
     public function getInnerObject(): AuraResponse
     {
-        return $this->response;
+        return $this->object;
     }
 
     /**
@@ -72,28 +77,6 @@ class Response implements ResponseInterface
     public function getReasonPhrase(): string
     {
         return $this->getInnerObject()->status->getPhrase() ?? '';
-    }
-
-    /**
-     * Get the object to override that contains the protocol version.
-     *
-     * @param string $version
-     * @return array
-     */
-    protected function getProtocolVersionContainer(string $version): array
-    {
-        $status = clone($this->getInnerObject()->status);
-        /**
-         * Add support for 2.0
-         */
-        $temp = new class($status) extends AuraResponse\Status {
-            protected $status;
-            public function __construct($status) { $this->status = $status; }
-            public function setVersion($version) { $this->status->version = $version; }
-        };
-        $temp->setVersion($version);
-
-        return compact('status');
     }
 
     /**

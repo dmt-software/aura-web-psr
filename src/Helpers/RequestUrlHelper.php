@@ -11,16 +11,9 @@ use Aura\Web\Request\Url as RequestUrl;
  *
  * @package DMT\Aura\Psr\Helpers
  */
-class RequestUrlHelper extends RequestUrl
+class RequestUrlHelper extends RequestUrl implements PropertyAccessorInterface
 {
-    /** @var RequestUrl $requestUrl */
-    private $requestUrl;
-
-    /** @param RequestUrl $requestUrl */
-    public function __construct(RequestUrl $requestUrl)
-    {
-        $this->requestUrl = $requestUrl;
-    }
+    use PropertyAccessorTrait;
 
     /**
      * Set a value inside request url.
@@ -31,14 +24,14 @@ class RequestUrlHelper extends RequestUrl
     public function set($component, string $value = null)
     {
         if (is_array($component)) {
-            $this->requestUrl->parts = $component;
-            $this->schemeIsSecure($this->requestUrl->parts['scheme'] ?? '');
+            $this->object->parts = $component;
+            $this->schemeIsSecure($this->object->parts['scheme'] ?? '');
             return;
         }
 
         $key = $this->keys[$component] ?? $component;
         if ($key !== null) {
-            $this->requestUrl->parts[$key] = $value;
+            $this->object->parts[$key] = $value;
         }
 
         if ($key === 'scheme') {
@@ -53,6 +46,6 @@ class RequestUrlHelper extends RequestUrl
      */
     protected function schemeIsSecure(string $scheme): void
     {
-        $this->requestUrl->secure = stripos($scheme, 'https') === 0;
+        $this->object->secure = stripos($scheme, 'https') === 0;
     }
 }

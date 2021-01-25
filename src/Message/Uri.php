@@ -8,6 +8,11 @@ use DMT\Aura\Psr\Helpers\HelperFactory;
 use DMT\Aura\Psr\Helpers\RequestUrlHelper;
 use Psr\Http\Message\UriInterface;
 
+/**
+ * Class Uri
+ *
+ * @package DMT\Aura\Psr\Message
+ */
 class Uri implements UriInterface
 {
     /**

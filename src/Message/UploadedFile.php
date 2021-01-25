@@ -1,11 +1,16 @@
 <?php
 
-namespace DMT\Aura\psr\Message;
+namespace DMT\Aura\Psr\Message;
 
 use Aura\Web\Request\Values;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 
+/**
+ * Class UploadedFile
+ *
+ * @package DMT\Aura\Psr\Message
+ */
 class UploadedFile implements UploadedFileInterface
 {
     /** @var Values $file */

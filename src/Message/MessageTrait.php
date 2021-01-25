@@ -4,12 +4,13 @@ namespace DMT\Aura\Psr\Message;
 
 use Aura\Web\Request as AuraRequest;
 use Aura\Web\Response as AuraResponse;
+use DMT\Aura\Psr\Helpers\HelperFactory;
 use Psr\Http\Message\StreamInterface;
 
 /**
  * Trait MessageTrait
  *
- * @package DMT\Aura\Psr
+ * @package DMT\Aura\Psr\Message
  */
 trait MessageTrait
 {
@@ -50,11 +51,17 @@ trait MessageTrait
      */
     public function withProtocolVersion($version): self
     {
-        if (is_bool($version) || !is_scalar($version) || !preg_match('~^(1(\.[01])|2(\.0)?)$~', $version)) {
-            return $this->newInstanceWith();
+        $instance = clone($this);
+
+        $innerObject = $instance->getInnerObject();
+        if ($innerObject instanceof AuraRequest) {
+            $server = $innerObject->server;
+            $server['SERVER_PROTOCOL'] = 'HTTP/' . $version;
+        } elseif ($innerObject instanceof AuraResponse) {
+            $instance->setObjectProperty($innerObject->status, 'version', $version);
         }
 
-        return $this->newInstanceWith($this->getProtocolVersionContainer($version));
+        return $instance;
     }
 
     /**
@@ -69,14 +76,7 @@ trait MessageTrait
      */
     public function getHeaders(): array
     {
-        $setHeaders = $this->getInnerObject()->headers->get();
-
-        $headers = [];
-        array_walk($setHeaders, function ($value, $key) use (&$headers) {
-            $headers[$this->originalHeaderName($key)] = $this->normalizeHeaderValue($value);
-        });
-
-        return $headers;
+        return $this->getInnerObject()->headers->get();
     }
 
     /**
@@ -89,15 +89,11 @@ trait MessageTrait
      */
     public function hasHeader($name): bool
     {
-        if (empty($name) || !is_string($name)) {
+        if (empty($name) || !is_string($name) || !preg_match('~^[a-z\-]+$~i', $name)) {
             return false;
         }
 
-        if ($this->getInnerObject() instanceof AuraResponse) {
-            return null !== $this->getInnerObject()->headers->get($name);
-        }
-
-        return array_key_exists($this->originalHeaderName($name), $this->getHeaders());
+        return !!preg_grep("~^{$name}$~i", array_keys($this->getHeaders()));
     }
 
     /**
@@ -116,16 +112,29 @@ trait MessageTrait
      */
     public function getHeader($name): array
     {
-        $value = [];
-
-        $innerObject = $this->getInnerObject();
-        if ($innerObject instanceof AuraRequest) {
-            $value = $this->getInnerObject()->headers->get($this->normalizeHeaderName($name));
-        } elseif ($innerObject instanceof AuraResponse) {
-            $value = $innerObject->headers->get($name);
+        $headers = $this->getHeaders();
+        if ($key = current(preg_grep("~^" . preg_quote($name) . "$~i", array_keys($headers)))) {
+            $name = $key;
         }
 
-        return $this->normalizeHeaderValue($value);
+        if (!array_key_exists($name, $headers)) {
+            return [];
+        }
+
+        return $this->normalizeHeaderValue($headers[$name]);
+    }
+
+    /**
+     * Retrieves a comma-separated string of the values for a single header.
+     *
+     * @param string $name Case-insensitive header field name.
+     * @return string A string of values as provided for the given header
+     *    concatenated together using a comma. If the header does not appear in
+     *    the message, this method MUST return an empty string.
+     */
+    public function getHeaderLine($name): string
+    {
+        return implode(',', $this->getHeader($name));
     }
 
     /**
@@ -138,7 +147,7 @@ trait MessageTrait
      */
     public function withHeader($name, $value): self
     {
-        if (!is_string($name) || $name === '') {
+        if (!is_string($name) || $name === '' || !preg_match('~^[a-z\-]+$~i', $name)) {
             throw new \InvalidArgumentException('invalid header name');
         }
 
@@ -147,9 +156,19 @@ trait MessageTrait
         }
 
         $headers = $this->getHeaders();
+        if ($key = current(preg_grep("~^{$name}$~i", array_keys($headers)))) {
+           unset($headers[$key]);
+        }
         $headers[$name] = $value;
 
-        return $this->newInstanceWith($this->getHeaderContainer($headers));
+        $instance = clone($this);
+        $this->setObjectProperty(
+            $instance->getInnerObject()->headers,
+            $this->getInnerObject() instanceof AuraResponse ? 'headers' : 'data',
+            $headers
+        );
+
+        return $instance;
     }
 
     /**
@@ -167,7 +186,7 @@ trait MessageTrait
     public function withAddedHeader($name, $value): self
     {
         if ($this->hasHeader($name)) {
-            $value = array_merge($this->getHeader($name), (array)$value);
+            $value = array_merge_recursive(array_values($this->getHeader($name)), (array)$value);
         }
 
         return $this->withHeader($name, $value);
@@ -181,25 +200,24 @@ trait MessageTrait
      */
     public function withoutHeader($name): self
     {
-        $headers = $this->getHeaders();
-        if ($this->hasHeader($name)) {
-            $headers[$this->originalHeaderName($name)] = null;
+        if (!is_string($name) || $name === '' || !preg_match('~[a-z\-]~i', $name)) {
+            throw new \InvalidArgumentException('invalid header name');
         }
 
-        return $this->newInstanceWith($this->getHeaderContainer($headers));
-    }
+        $headers = $this->getHeaders();
+        if ($key = current(preg_grep("~^{$name}$~i", array_keys($headers)))) {
+            $name = $key;
+        }
+        unset($headers[$name]);
 
-    /**
-     * Retrieves a comma-separated string of the values for a single header.
-     *
-     * @param string $name Case-insensitive header field name.
-     * @return string A string of values as provided for the given header
-     *    concatenated together using a comma. If the header does not appear in
-     *    the message, this method MUST return an empty string.
-     */
-    public function getHeaderLine($name): string
-    {
-        return implode(',', $this->getHeader($name));
+        $instance = clone($this);
+        $this->setObjectProperty(
+            $instance->getInnerObject()->headers,
+            $this->getInnerObject() instanceof AuraResponse ? 'headers' : 'data',
+            $headers
+        );
+
+        return $instance;
     }
 
     /**
@@ -230,61 +248,16 @@ trait MessageTrait
             $body = new Stream(new $contentClass($this->getHeaders()), $body->detach());
         }
 
-        $content = $body->getInnerObject();
+        $instance = clone($this);
+        $instance->body = $body;
 
-        $object = $this->newInstanceWith(compact('content'));
-        $object->body = $body;
+        $this->setObjectProperty(
+            $instance->getInnerObject(),
+            'content',
+            $body->getInnerObject()
+        );
 
-        return $object;
-    }
-
-    /**
-     * Get the object to override that contains the protocol version.
-     *
-     * @param string $version
-     * @return array
-     */
-    abstract protected function getProtocolVersionContainer(string $version): array;
-
-    /**
-     * @param array $override
-     * @return static
-     */
-    abstract protected function newInstanceWith(array $override = []): self;
-
-    /**
-     * Get the original header name.
-     *
-     * @param string|mixed $name
-     * @return string
-     * @throws \InvalidArgumentException
-     */
-    private function originalHeaderName($name): string
-    {
-        if (!is_string($name) || $name === '') {
-            throw new \InvalidArgumentException('header name must be a string');
-        }
-
-        if ($this->getInnerObject() instanceof AuraResponse) {
-            return $name;
-        }
-
-        if (stripos($name, 'content') !== 0 && stripos($name, 'http_') !== 0) {
-            $name = 'http_' . $name;
-        }
-
-        return str_replace('-', '_', strtoupper($name));
-    }
-
-    /**
-     * Normalize the header name.
-     *
-     * @param string $name
-     * @return string
-     */
-    private function normalizeHeaderName(string $name): string
-    {
-        return str_replace(['http', '_'], ['', '-'], strtolower($name));
+        return $instance;
     }
 
     /**
@@ -308,5 +281,19 @@ trait MessageTrait
         }
 
         return $value;
+    }
+
+    public function __clone()
+    {
+        $this->object = (new HelperFactory())
+            ->createHelper($this->getInnerObject())
+            ->cloneObject();
+    }
+
+    protected function setObjectProperty($object, $property, $value)
+    {
+        (new HelperFactory())
+            ->createHelper($object)
+            ->setObjectProperty($property, $value);
     }
 }

@@ -3,10 +3,15 @@
 namespace DMT\Aura\Psr\Message;
 
 use Aura\Web\Request as AuraRequest;
-use DMT\Aura\Psr\Helpers\HelperFactory;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use Psr\Http\Message\UriInterface;
 
+/**
+ * Class ServerRequest
+ *
+ * @package DMT\Aura\Psr\Message
+ */
 class ServerRequest extends Request implements ServerRequestInterface
 {
     /** @var UploadedFile[] $uploadedFiles */
@@ -14,42 +19,17 @@ class ServerRequest extends Request implements ServerRequestInterface
 
     /**
      * ServerRequest constructor.
+     *
      * @param string $method
-     * @param $uri
+     * @param string|UriInterface $uri
      * @param array $serverParams
      */
     public function __construct(string $method, $uri, array $serverParams = [])
     {
-        $serverParams['REQUEST_METHOD'] = $method;
+        parent::__construct($method, $uri);
 
         $request = $this->getInnerObject();
-        $request->server->exchangeArray($serverParams);
-
-        if ((string)$uri !== '' && $components = parse_url($uri)) {
-            HelperFactory::getRequestUrlHelper($request->url)->set($components);
-        }
-        $this->uri = new Uri($request->url);
-    }
-
-    /**
-     * Create from existing request.
-     *
-     * @param AuraRequest $request
-     * @return static
-     */
-    public static function createFromAuraRequest(AuraRequest $request): self
-    {
-        $instance = new self(
-            $request->server->get('REQUEST_METHOD', 'GET'),
-            $request->url->get(),
-            $request->server->get()
-        );
-
-        $instance->request = $request;
-
-        $instance->getUploadedFiles();
-
-        return $instance;
+        $request->server->exchangeArray(['REQUEST_METHOD' => $method] + $serverParams);
     }
 
     /**
@@ -80,9 +60,15 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function withCookieParams(array $cookies): self
     {
-        return $this->newInstanceWith([
-            'cookies' => new AuraRequest\Values($cookies)
-        ]);
+        $instance = clone($this);
+
+        $this->setObjectProperty(
+            $instance->getInnerObject(),
+            'cookies',
+            new AuraRequest\Values($cookies)
+        );
+
+        return $instance;
     }
 
     /**
@@ -103,9 +89,15 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function withQueryParams(array $query): self
     {
-        return $this->newInstanceWith([
-            'query' => new AuraRequest\Values($query)
-        ]);
+        $instance = clone($this);
+
+        $this->setObjectProperty(
+            $instance->getInnerObject(),
+            'query',
+            new AuraRequest\Values($query)
+        );
+
+        return $instance;
     }
 
     /**
@@ -115,16 +107,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function getUploadedFiles(): array
     {
-        if (!$this->uploadedFiles) {
-            $this->uploadedFiles = array_map(
-                function ($uploadedFile) {
-                    return new UploadedFile(new AuraRequest\Values($uploadedFile));
-                },
-                array_values($this->getInnerObject()->files->get())
-            );
-        }
-
-        return $this->uploadedFiles;
+        return $this->uploadedFiles ?? [];
     }
 
     /**
@@ -151,10 +134,11 @@ class ServerRequest extends Request implements ServerRequestInterface
             ];
         }
 
-        $request = $this->newInstanceWith(['files' => new AuraRequest\Files($files)]);
-        $request->uploadedFiles = $uploadedFiles;
+        $instance = clone($this);
+        $instance->uploadedFiles = $uploadedFiles;
+        $instance->getInnerObject()->files->exchangeArray($files);
 
-        return $request;
+        return $instance;
     }
 
     /**
@@ -168,8 +152,8 @@ class ServerRequest extends Request implements ServerRequestInterface
     {
         $data = $this->getInnerObject()->post->get();
 
-        if (array_key_exists('__object__', $data)) {
-            $data = $data['__object__'];
+        if ((\ArrayObject::ARRAY_AS_PROPS & $this->getInnerObject()->post->getFlags()) > 0) {
+            return (object)$data;
         }
 
         return $data ?: null;
@@ -184,17 +168,18 @@ class ServerRequest extends Request implements ServerRequestInterface
      */
     public function withParsedBody($data): self
     {
-        if (!is_null($data) && !is_array($data) && !is_object($data)) {
+        if (!is_null($data) && !is_array($data) && !$data instanceof \stdClass) {
             throw new \InvalidArgumentException('unsupported body type used');
         }
 
+        $instance = clone($this);
+        $instance->getInnerObject()->post->exchangeArray((array)$data);
+
         if (is_object($data)) {
-            $data = ['__object__' => $data];
+            $instance->getInnerObject()->post->setFlags(\ArrayObject::ARRAY_AS_PROPS);
         }
 
-        $post = new AuraRequest\Values((array)$data);
-
-        return $this->newInstanceWith(compact('post'));
+        return $instance;
     }
 
     /**
@@ -239,10 +224,10 @@ class ServerRequest extends Request implements ServerRequestInterface
         $params = $this->getAttributes();
         $params[$name] = $value;
 
-        $request = $this->newInstanceWith();
-        $request->getInnerObject()->params->set($params);
+        $instance = clone($this);
+        $instance->getInnerObject()->params->set($params);
 
-        return $request;
+        return $instance;
     }
 
     /**
@@ -256,9 +241,9 @@ class ServerRequest extends Request implements ServerRequestInterface
         $params = $this->getAttributes();
         unset($params[$name]);
 
-        $request = $this->newInstanceWith();
-        $request->getInnerObject()->params->set($params);
+        $instance = clone($this);
+        $instance->getInnerObject()->params->set($params);
 
-        return $request;
+        return $instance;
     }
 }
