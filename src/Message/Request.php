@@ -4,6 +4,7 @@ namespace DMT\Aura\Psr\Message;
 
 use Aura\Web\Request as AuraRequest;
 use Aura\Web\WebFactory;
+use DMT\Aura\Psr\Factory\StreamFactory;
 use DMT\Aura\Psr\Factory\UriFactory;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UriInterface;
@@ -28,7 +29,7 @@ class Request implements RequestInterface
      * @param string $method The HTTP method associated with the request.
      * @param UriInterface|string $uri The URI associated with the request.
      */
-    public function __construct($method, $uri)
+    public function __construct(string $method, $uri)
     {
         $request = $this->getInnerObject();
         $server = $request->server;
@@ -38,6 +39,8 @@ class Request implements RequestInterface
             $this->setObjectProperty($request->url, 'parts', $components);
         }
         $this->uri = new Uri($request->url);
+
+        $this->body = (new StreamFactory())->createStream();
     }
 
     /**

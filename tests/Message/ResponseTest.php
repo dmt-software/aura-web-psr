@@ -40,8 +40,6 @@ class ResponseTest extends ResponseIntegrationTest
      */
     protected function buildStream($data): Stream
     {
-        $contents = $this->createSubject()->getInnerObject()->content;
-
-        return new Stream($contents, fopen('data://text/plain,' . $data, 'r+'));
+        return new Stream($data);
     }
 }

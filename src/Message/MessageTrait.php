@@ -227,10 +227,6 @@ trait MessageTrait
      */
     public function getBody(): StreamInterface
     {
-        if (!$this->body instanceof Stream) {
-            $this->body = new Stream($this->getInnerObject()->content);
-        }
-
         return $this->body;
     }
 
@@ -240,12 +236,12 @@ trait MessageTrait
      * @param StreamInterface $body
      * @return static
      * @throws \InvalidArgumentException
+     * @todo create callback helper to populate content classes from stream.
      */
     public function withBody(StreamInterface $body): self
     {
         if (!$body instanceof Stream) {
-            $contentClass = get_class($this->getInnerObject()) . '\\Content';
-            $body = new Stream(new $contentClass($this->getHeaders()), $body->detach());
+            $body = new Stream($body->detach());
         }
 
         $instance = clone($this);

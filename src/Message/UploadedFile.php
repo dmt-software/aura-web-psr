@@ -13,17 +13,44 @@ use Psr\Http\Message\UploadedFileInterface;
  */
 class UploadedFile implements UploadedFileInterface
 {
-    /** @var Values $file */
-    private $file;
     /** @var StreamInterface $stream */
     private $stream;
+    /** @var Values $file */
+    private $file;
+
+    /**
+     * UploadedFile constructor.
+     *
+     * @param StreamInterface $stream
+     * @param int|null $size
+     * @param int $error
+     * @param string|null $clientFilename
+     * @param string|null $clientMediaType
+     */
+    public function __construct(
+        StreamInterface $stream,
+        int $size = null,
+        int $error = \UPLOAD_ERR_OK,
+        string $clientFilename = null,
+        string $clientMediaType = null
+    )
+    {
+        $this->stream = $stream;
+        $this->file = new Values([
+            'error' => $error,
+            'name' => $clientFilename,
+            'size' => $size,
+            'tmp_name' => $stream->getMetadata('uri'),
+            'type' => $clientMediaType,
+        ]);
+    }
 
     /**
      * UploadedFile constructor.
      *
      * @param Values $file
      */
-    public function __construct(Values $file)
+    public function construct(Values $file)
     {
         $this->file = $file;
 

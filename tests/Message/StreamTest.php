@@ -9,20 +9,8 @@ use Psr\Http\Message\StreamInterface;
 
 class StreamTest extends StreamIntegrationTest
 {
-    public function testContent()
-    {
-        $contents = (new WebFactory([]))->newRequestContent();
-        $stream = fopen('data://text/plain,' . $contents->getRaw(), 'r+');
-        $request = new Stream($contents, $stream);
-        $request->write('blablabla');
-
-        $this->assertSame($request->getInnerObject(), $contents);
-    }
-
     public function createStream($data): StreamInterface
     {
-        $contents = (new WebFactory([]))->newRequestContent();
-
-        return new Stream($contents, $data);
+        return new Stream($data);
     }
 }

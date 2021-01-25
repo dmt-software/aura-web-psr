@@ -29,8 +29,6 @@ class RequestTest extends RequestIntegrationTest
      */
     protected function buildStream($data): Stream
     {
-        $contents = (new WebFactory([]))->newRequestContent();
-
-        return new Stream($contents, fopen('data://text/plain,' . $data, 'r+'));
+        return new Stream($data);
     }
 }

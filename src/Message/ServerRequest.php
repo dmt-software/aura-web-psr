@@ -120,18 +120,20 @@ class ServerRequest extends Request implements ServerRequestInterface
     public function withUploadedFiles(array $uploadedFiles): self
     {
         $files = [];
-        foreach ($uploadedFiles as $uploadedFile) {
+        foreach ($uploadedFiles as $name => &$uploadedFile) {
             if (!$uploadedFile instanceof UploadedFileInterface) {
                 throw new \InvalidArgumentException('illegal uploaded file entry');
             }
-
-            $files[$uploadedFile->getClientFilename()] = [
-                'error' => $uploadedFile->getError(),
-                'name' => $uploadedFile->getClientFilename(),
-                'size' => $uploadedFile->getSize(),
-                'tmp_name' => $uploadedFile->getStream()->getMetadata('uri'),
-                'type' => $uploadedFile->getClientMediaType(),
-            ];
+            if (!$uploadedFile instanceof UploadedFile) {
+                $uploadedFile = new UploadedFile(
+                    new Stream($uploadedFile->getStream()->detach()),
+                    $uploadedFile->getSize(),
+                    $uploadedFile->getError(),
+                    $uploadedFile->getClientFilename(),
+                    $uploadedFile->getClientMediaType()
+                );
+            }
+            $files[$name] = $uploadedFile->getInnerObject()->getArrayCopy();
         }
 
         $instance = clone($this);

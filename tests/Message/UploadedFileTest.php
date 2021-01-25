@@ -3,6 +3,7 @@
 namespace DMT\Test\Aura\Psr\Message;
 
 use Aura\Web\Request\Values;
+use DMT\Aura\Psr\Message\Stream;
 use DMT\Aura\Psr\Message\UploadedFile;
 use Http\Psr7Test\UploadedFileIntegrationTest;
 
@@ -10,17 +11,6 @@ class UploadedFileTest extends UploadedFileIntegrationTest
 {
     public function createSubject()
     {
-        $file = tempnam(sys_get_temp_dir(), 'file');
-        file_put_contents($file, 'foo');
-
-        $file = [
-            'tmp_name' => $file,
-            'name' => 'newfilename',
-            'error' => UPLOAD_ERR_OK,
-            'size' => 3,
-            'type' => 'text/plain',
-        ];
-
-        return new UploadedFile(new Values($file));
+        return new UploadedFile(new Stream(''), null, UPLOAD_ERR_OK, 'newfilename', 'text/plain');
     }
 }

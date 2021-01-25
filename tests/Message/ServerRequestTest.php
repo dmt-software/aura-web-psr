@@ -4,6 +4,7 @@ namespace DMT\Test\Aura\Psr\Message;
 
 use Aura\Web\Request\Values;
 use DMT\Aura\Psr\Factory\ServerRequestFactory;
+use DMT\Aura\Psr\Message\Stream;
 use DMT\Aura\Psr\Message\UploadedFile;
 use Http\Psr7Test\ServerRequestIntegrationTest;
 use Psr\Http\Message\ServerRequestInterface;
@@ -27,17 +28,9 @@ class ServerRequestTest extends ServerRequestIntegrationTest
      */
     protected function buildUploadableFile($data): UploadedFile
     {
-        $file = tempnam(sys_get_temp_dir(), 'file');
-        file_put_contents($file, $data);
+//        $file = tempnam(sys_get_temp_dir(), 'file');
+//        file_put_contents($file, $data);
 
-        $file = [
-            'tmp_name' => $file,
-            'name' => 'newfilename',
-            'error' => UPLOAD_ERR_OK,
-            'size' => strlen($data),
-            'type' => 'text/plain',
-        ];
-
-        return new UploadedFile(new Values($file));
+        return new UploadedFile(new Stream($data), strlen($data), UPLOAD_ERR_OK, 'newfilename', 'text/plain');
     }
 }
