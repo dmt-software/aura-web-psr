@@ -23,6 +23,8 @@ class HelperFactory
         switch ($class) {
             case AuraRequest::class:
                 return new RequestHelper($object);
+            case AuraRequest\Content::class:
+                return new RequestContentHelper($object);
             case AuraRequest\Headers::class:
                 return new RequestHeadersHelper($object);
             case AuraRequest\Method::class:

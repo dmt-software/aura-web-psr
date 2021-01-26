@@ -18,7 +18,7 @@ class Uri implements UriInterface
     /**
      * Default ports for schemes.
      */
-    public const DEFAULT_PORTS = [
+    const DEFAULT_PORTS = [
         'http' => 80,
         'https' => 443,
     ];
@@ -127,7 +127,7 @@ class Uri implements UriInterface
      *
      * @return null|int
      */
-    public function getPort(): ?int
+    public function getPort()
     {
         $port = $this->urlGet(PHP_URL_PORT, null);
         if ($port == (self::DEFAULT_PORTS[$this->getScheme()] ?? null)) {
@@ -361,7 +361,7 @@ class Uri implements UriInterface
      * @param string|null $default
      * @return string|null
      */
-    private function urlGet(int $component, ?string $default = ''): ?string
+    private function urlGet(int $component, $default = '')
     {
         try {
             return $this->requestUrl->get($component) ?? $default;
@@ -377,7 +377,7 @@ class Uri implements UriInterface
      * @param string|null $value
      * @return static
      */
-    private function urlSet($component, ?string $value): self
+    private function urlSet($component, string $value): self
     {
         $newInstance = clone($this);
         $newInstance->urlWrapper->set($this->requestUrl->get());

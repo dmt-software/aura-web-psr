@@ -22,6 +22,7 @@ class Stream implements StreamInterface
     /** @var resource $resource */
     private $resource;
 
+
     /** @var RequestContent */
     private $original;
     /** @var RequestContent */
@@ -49,16 +50,6 @@ class Stream implements StreamInterface
     }
 
     /**
-     * @return RequestContent|Values
-     */
-    public function getInnerObject()
-    {
-//        $this->contents->get();
-
-        return $this->original;
-    }
-
-    /**
      * Reads all data from the stream into a string, from the beginning to end.
      *
      * @return string
@@ -71,8 +62,6 @@ class Stream implements StreamInterface
             return $this->getContents();
         } catch (\RuntimeException $exception) {
             return '';
-        } finally {
-//            $this->contents->get();
         }
     }
 
@@ -310,58 +299,5 @@ class Stream implements StreamInterface
     public function __destruct()
     {
         $this->close();
-    }
-
-    /**
-     * @param RequestContent $contents
-     * @param resource $stream
-     */
-    private function forRequest(RequestContent $contents, $stream): void
-    {
-        if (!is_resource($stream)) {
-            throw new \TypeError('Stream is expected to be a resource');
-        }
-
-        $server = ['CONTENT_TYPE' => 'text/plain'];
-        $decoders = ['text/plain' => function () use (&$contents) {
-            $raw = new \ReflectionProperty(RequestContent::class, 'raw');
-            $raw->setAccessible(true);
-            $raw->setValue($contents, (string)$this);
-        }];
-
-        $this->contents = new RequestContent($server, $decoders);
-        $this->original = $contents;
-        $this->resource = $stream;
-    }
-
-    /**
-     * @param ResponseContent $contents
-     * @param resource $stream
-     */
-    private function forResponse(ResponseContent $contents, $stream): void
-    {
-        if (!is_resource($stream)) {
-            throw new \TypeError('Stream is expected to be a resource');
-        }
-
-        $callback = function () use (&$contents) {
-            $this->rewind();
-            $contents->set($this->getContents());
-            return $contents->get();
-        };
-
-        $this->contents = new class($callback) {
-            /** @var \Closure */
-            protected $callback;
-            /** @param \Closure $contents */
-            public function __construct($callback) {
-                $this->callback = $callback;
-            }
-            public function get() {
-                return call_user_func($this->callback);
-            }
-        };
-        $this->original = $contents;
-        $this->resource = $stream;
     }
 }

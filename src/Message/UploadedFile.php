@@ -33,8 +33,7 @@ class UploadedFile implements UploadedFileInterface
         int $error = \UPLOAD_ERR_OK,
         string $clientFilename = null,
         string $clientMediaType = null
-    )
-    {
+    ) {
         $this->stream = $stream;
         $this->file = new Values([
             'error' => $error,
@@ -43,20 +42,6 @@ class UploadedFile implements UploadedFileInterface
             'tmp_name' => $stream->getMetadata('uri'),
             'type' => $clientMediaType,
         ]);
-    }
-
-    /**
-     * UploadedFile constructor.
-     *
-     * @param Values $file
-     */
-    public function construct(Values $file)
-    {
-        $this->file = $file;
-
-        if ($this->getError() === UPLOAD_ERR_OK) {
-            $this->stream = new Stream($file);
-        }
     }
 
     /**
@@ -89,7 +74,7 @@ class UploadedFile implements UploadedFileInterface
      * @throws \InvalidArgumentException
      * @throws \RuntimeException
      */
-    public function moveTo($targetPath): void
+    public function moveTo($targetPath)
     {
         if (!is_string($targetPath) || $targetPath === '') {
             throw new \InvalidArgumentException('invalid target path');
@@ -117,7 +102,7 @@ class UploadedFile implements UploadedFileInterface
      *
      * @return int|null
      */
-    public function getSize(): ?int
+    public function getSize()
     {
         return $this->file->get('size');
     }
@@ -137,7 +122,7 @@ class UploadedFile implements UploadedFileInterface
      *
      * @return string|null
      */
-    public function getClientFilename(): ?string
+    public function getClientFilename()
     {
         return $this->file->get('name');
     }
@@ -147,7 +132,7 @@ class UploadedFile implements UploadedFileInterface
      *
      * @return string|null
      */
-    public function getClientMediaType(): ?string
+    public function getClientMediaType()
     {
         return $this->file->get('type');
     }
@@ -157,7 +142,7 @@ class UploadedFile implements UploadedFileInterface
      *
      * @throws \RuntimeException
      */
-    private function validateStream(): void
+    private function validateStream()
     {
         if ($this->getError() !== UPLOAD_ERR_OK) {
             throw new \RuntimeException('file contains errors');

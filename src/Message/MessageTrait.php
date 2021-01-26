@@ -236,7 +236,6 @@ trait MessageTrait
      * @param StreamInterface $body
      * @return static
      * @throws \InvalidArgumentException
-     * @todo create callback helper to populate content classes from stream.
      */
     public function withBody(StreamInterface $body): self
     {
@@ -247,11 +246,12 @@ trait MessageTrait
         $instance = clone($this);
         $instance->body = $body;
 
-        $this->setObjectProperty(
-            $instance->getInnerObject(),
-            'content',
-            $body->getInnerObject()
-        );
+        $object = $instance->getInnerObject();
+        if ($object instanceof AuraRequest) {
+            $this->setObjectProperty($object->content, 'raw', $body);
+        } elseif ($object instanceof AuraResponse) {
+            $object->content->set($body);
+        }
 
         return $instance;
     }
