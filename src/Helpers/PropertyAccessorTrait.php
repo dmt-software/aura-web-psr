@@ -2,6 +2,11 @@
 
 namespace DMT\Aura\Psr\Helpers;
 
+/**
+ * Trait PropertyAccessorTrait
+ *
+ * @package DMT\Aura\Psr\Helpers
+ */
 trait PropertyAccessorTrait
 {
     /** @var object $object */

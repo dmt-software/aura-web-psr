@@ -3,6 +3,7 @@
 namespace DMT\Aura\Psr\Factory;
 
 use DMT\Aura\Psr\Message\Stream;
+use DMT\Aura\Psr\Message\UploadedFile;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UploadedFileInterface;
@@ -23,8 +24,7 @@ class UploadedFileFactory implements UploadedFileFactoryInterface
      * @see http://php.net/manual/features.file-upload.post-method.php
      * @see http://php.net/manual/features.file-upload.errors.php
      *
-     * @param StreamInterface $stream Underlying stream representing the
-     *     uploaded file content.
+     * @param StreamInterface $stream Underlying stream representing the uploaded file content.
      * @param int $size in bytes
      * @param int $error PHP file upload error
      * @param string $clientFilename Filename as provided by the client, if any.
@@ -41,6 +41,6 @@ class UploadedFileFactory implements UploadedFileFactoryInterface
         string $clientFilename = null,
         string $clientMediaType = null
     ): UploadedFileInterface {
-
+        return new UploadedFile($stream, $size, $error, $clientFilename, $clientMediaType);
     }
 }

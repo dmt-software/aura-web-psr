@@ -2,24 +2,18 @@
 
 namespace DMT\Test\Aura\Psr\Message;
 
-use Aura\Web\WebFactory;
+use DMT\Aura\Psr\Factory\ResponseFactory;
 use DMT\Aura\Psr\Message\Response;
-use DMT\Aura\Psr\Message\Stream;
 use Http\Psr7Test\ResponseIntegrationTest;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
 
+/**
+ * Class ResponseTest
+ *
+ * @package DMT\Test\Aura\Psr\Message
+ */
 class ResponseTest extends ResponseIntegrationTest
 {
-
-    public function testWithUpdatedProtocolVersion()
-    {
-        $response = $this->createSubject();
-        $newResponse = $response->withProtocolVersion('2.0');
-
-        $this->assertSame('2.0', $newResponse->getProtocolVersion());
-    }
-
     /**
      * Create response.
      *
@@ -27,19 +21,18 @@ class ResponseTest extends ResponseIntegrationTest
      */
     public function createSubject(): Response
     {
-        $response = (new WebFactory([]))->newResponse();
-
-        return new Response($response);
+        return (new ResponseFactory())->createResponse();
     }
 
     /**
-     * Build stream.
-     *
-     * @param string $data
-     * @return Stream|StreamInterface
+     * Extra test if wrapped aura response accepts http version 2.0.
+     * The original aura response does not.
      */
-    protected function buildStream($data): Stream
+    public function testWithUpdatedProtocolVersion()
     {
-        return new Stream($data);
+        $response = $this->createSubject();
+        $newResponse = $response->withProtocolVersion('2.0');
+
+        $this->assertSame('2.0', $newResponse->getProtocolVersion());
     }
 }

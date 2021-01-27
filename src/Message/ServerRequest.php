@@ -30,6 +30,12 @@ class ServerRequest extends Request implements ServerRequestInterface
 
         $request = $this->getInnerObject();
         $request->server->exchangeArray(['REQUEST_METHOD' => $method] + $serverParams);
+
+        $this->setObjectProperty(
+            $request ,
+            'headers',
+            new AuraRequest\Headers($request->server->get())
+        );
     }
 
     /**

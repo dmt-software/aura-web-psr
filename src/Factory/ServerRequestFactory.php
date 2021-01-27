@@ -28,7 +28,7 @@ class ServerRequestFactory implements ServerRequestFactoryInterface
      * @param array $serverParams Array of SAPI parameters with which to seed
      *     the generated request instance.
      *
-     * @return ServerRequestInterface
+     * @return ServerRequest|ServerRequestInterface
      */
     public function createServerRequest(string $method, $uri, array $serverParams = []): ServerRequestInterface
     {

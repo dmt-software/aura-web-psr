@@ -22,6 +22,8 @@
     </filter>
     <php>
         <server name="REQUEST_METHOD" value="GET"/>
+        <const name="STREAM_FACTORY" value="DMT\Aura\Psr\Factory\StreamFactory"/>
         <const name="URI_FACTORY" value="DMT\Aura\Psr\Factory\UriFactory"/>
+        <const name="UPLOADED_FILE_FACTORY" value="DMT\Aura\Psr\Factory\UploadedFileFactory"/>
     </php>
 </phpunit>

@@ -5,8 +5,15 @@ namespace DMT\Aura\Psr\Helpers;
 use Aura\Web\Request as AuraRequest;
 use Aura\Web\Response as AuraResponse;
 
-use Aura\Web\Request\Url as RequestUrl;
-
+/**
+ * Class HelperFactory
+ *
+ * These helpers help to access object properties within Aura Web that are normally
+ * inaccessible without depending on reflection.
+ * Without this access Aura Web can not act as a psr-7 implementation.
+ *
+ * @package DMT\Aura\Psr\Helpers
+ */
 class HelperFactory
 {
     /**
@@ -40,53 +47,5 @@ class HelperFactory
             default:
                 throw new \InvalidArgumentException('unsupported object');
         }
-    }
-
-    /**
-     * Clone a cloned request.
-     *
-     * @param object $object the object to clone.
-     * @param array $overrideProperties the properties to override.
-     *
-     * @return object
-     */
-    public static function cloneObject($object, array $overrideProperties = [])
-    {
-        $helper = new ResponseHelper($object);
-        if ($object instanceof AuraRequest) {
-            $helper = new RequestHelper($object);
-        }
-
-        return $helper->clonedWith($object, $overrideProperties);
-    }
-
-    public static function accessProperty($object, $property, $value = null)
-    {
-        $class = get_class($object);
-
-        switch ($class) {
-            case AuraRequest::class:
-                $helper = new RequestHelper($object);
-                break;
-            case AuraResponse::class:
-                $helper = new ResponseHelper($object);
-                break;
-            case AuraRequest\Method::class:
-                $helper = new RequestMethodHelper($object);
-                break;
-        }
-
-        $helper->setObjectProperty($property, $value);
-    }
-
-    /**
-     * Return a wrapped request url to allow overriding url components.
-     *
-     * @param RequestUrl $requestUrl
-     * @return RequestUrlHelper
-     */
-    public static function getRequestUrlHelper(RequestUrl $requestUrl): RequestUrlHelper
-    {
-        return new RequestUrlHelper($requestUrl);
     }
 }

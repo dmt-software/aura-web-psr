@@ -15,18 +15,26 @@ use Psr\Http\Message\UriInterface;
  */
 class Uri implements UriInterface
 {
-    /**
-     * Default ports for schemes.
-     */
+    /** Url components */
+    const URI_COMPONENTS = [
+        PHP_URL_SCHEME => 'scheme',
+        PHP_URL_HOST => 'host',
+        PHP_URL_PORT => 'port',
+        PHP_URL_USER => 'user',
+        PHP_URL_PASS => 'pass',
+        PHP_URL_PATH => 'path',
+        PHP_URL_QUERY => 'query',
+        PHP_URL_FRAGMENT => 'fragment',
+    ];
+
+    /** Default ports for schemes. */
     const DEFAULT_PORTS = [
         'http' => 80,
         'https' => 443,
     ];
 
-    /** @var AuraUrl $requestUrl */
-    protected $requestUrl;
-    /** @var RequestUrlHelper */
-    private $urlWrapper;
+    /** @var AuraUrl $object */
+    protected $object;
 
     /**
      * Uri constructor.
@@ -34,13 +42,14 @@ class Uri implements UriInterface
      * @param AuraUrl $requestUrl
      * @param string|null $uri
      */
-    public function __construct(AuraUrl $requestUrl, string $uri = null)
+    public function __construct(string $uri = null)
     {
-        $this->requestUrl = $requestUrl;
-        $this->urlWrapper = HelperFactory::getRequestUrlHelper($requestUrl);
+        $object = $this->getInnerObject();
 
         if ($uri) {
-            $this->urlWrapper->set(parse_url($uri));
+            (new HelperFactory())
+                ->createHelper($object)
+                ->setObjectProperty('parts', parse_url($uri));
         }
     }
 
@@ -49,7 +58,10 @@ class Uri implements UriInterface
      */
     public function getInnerObject(): AuraUrl
     {
-        return $this->requestUrl;
+        if (!$this->object) {
+            $this->object = new AuraUrl([]);
+        }
+        return $this->object;
     }
 
 
@@ -196,7 +208,7 @@ class Uri implements UriInterface
             throw new \InvalidArgumentException('invalid scheme given');
         }
 
-        return $this->urlSet(PHP_URL_SCHEME, strtolower($scheme) . '://');
+        return  $this->urlSet(PHP_URL_SCHEME, strtolower($scheme) . '://');
     }
 
     /**
@@ -350,7 +362,6 @@ class Uri implements UriInterface
         if (is_array($data)) {
             return array_map([$this, __FUNCTION__], $data);
         }
-
         return rawurldecode((string)$data);
     }
 
@@ -364,7 +375,7 @@ class Uri implements UriInterface
     private function urlGet(int $component, $default = '')
     {
         try {
-            return $this->requestUrl->get($component) ?? $default;
+            return $this->object->get($component) ?? $default;
         } catch (InvalidComponent $exception) {
             return $default;
         }
@@ -377,12 +388,19 @@ class Uri implements UriInterface
      * @param string|null $value
      * @return static
      */
-    private function urlSet($component, string $value): self
+    private function urlSet(int $component, string $value): self
     {
-        $newInstance = clone($this);
-        $newInstance->urlWrapper->set($this->requestUrl->get());
-        $newInstance->urlWrapper->set($component, $value);
+        $component = [self::URI_COMPONENTS[$component] => $value];
 
-        return $newInstance;
+        $instance = clone($this);
+
+        $helper = (new HelperFactory())->createHelper($instance->getInnerObject());
+        $helper->setObjectProperty('parts', $component + $helper->getObjectProperty('parts', []));
+        $helper->setObjectProperty('string', (string)$instance);
+        if ($component === PHP_URL_SCHEME) {
+            $helper->getObjectProperty('secure', stripos($value, 'https') === 0);
+        }
+
+        return $instance;
     }
 }

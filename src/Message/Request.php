@@ -18,8 +18,6 @@ class Request implements RequestInterface
 {
     use MessageTrait;
 
-    /** @var AuraRequest $object */
-    protected $object;
     /** @var UriInterface $uri */
     protected $uri;
 
@@ -35,11 +33,7 @@ class Request implements RequestInterface
         $server = $request->server;
         $server['REQUEST_METHOD'] = $method;
 
-        if ((string)$uri !== '' && $components = parse_url($uri)) {
-            $this->setObjectProperty($request->url, 'parts', $components);
-        }
-        $this->uri = new Uri($request->url);
-
+        $this->uri = (new UriFactory())->createUri($uri);
         $this->body = (new StreamFactory())->createStream();
     }
 
@@ -51,6 +45,12 @@ class Request implements RequestInterface
         if (!$this->object) {
             $this->object = (new WebFactory([]))->newRequest();
         }
+
+        $this->setObjectProperty(
+            $this->object ,
+            'client',
+            new AuraRequest\Client($this->object->server->get())
+        );
 
         return $this->object;
     }

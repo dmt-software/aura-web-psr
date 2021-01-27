@@ -2,11 +2,16 @@
 
 namespace DMT\Test\Aura\Psr\Message;
 
-use Aura\Web\Request\Url;
+use DMT\Aura\Psr\Factory\UriFactory;
 use DMT\Aura\Psr\Message\Uri;
 use Http\Psr7Test\UriIntegrationTest;
 use Psr\Http\Message\UriInterface;
 
+/**
+ * Class UriTest
+ *
+ * @package DMT\Test\Aura\Psr\Message
+ */
 class UriTest extends UriIntegrationTest
 {
     /**
@@ -14,15 +19,15 @@ class UriTest extends UriIntegrationTest
      *
      * @param string $uri
      *
-     * @return UriInterface
+     * @return Uri|UriInterface
      */
-    public function createUri($uri): UriInterface
+    public function createUri($uri): Uri
     {
-        return new Uri(new Url([]), $uri);
+        return (new UriFactory())->createUri($uri);
     }
 
     /**
-     * Overridden, percent-encoding is case insensitive, the original test is not.
+     * Overridden, percent-encoding should be case insensitively tested, the original test is not.
      *
      * @dataProvider getPaths
      */

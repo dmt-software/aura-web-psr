@@ -27,6 +27,6 @@ class UriFactory implements UriFactoryInterface
             throw new \InvalidArgumentException('illegal uri given');
         }
 
-        return new Uri((new WebFactory([]))->newRequestUrl(), $uri);
+        return new Uri($uri);
     }
 }

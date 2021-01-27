@@ -21,12 +21,6 @@ class Stream implements StreamInterface
 
     /** @var resource $resource */
     private $resource;
-
-
-    /** @var RequestContent */
-    private $original;
-    /** @var RequestContent */
-    private $contents;
     /** @var array $metadata */
     private $metadata;
 

@@ -2,33 +2,25 @@
 
 namespace DMT\Test\Aura\Psr\Message;
 
-use Aura\Web\WebFactory;
 use DMT\Aura\Psr\Factory\RequestFactory;
-use DMT\Aura\Psr\Message\Stream;
+use DMT\Aura\Psr\Message\Request;
 use Http\Psr7Test\RequestIntegrationTest;
 use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\StreamInterface;
 
+/**
+ * Class RequestTest
+ *
+ * @package DMT\Test\Aura\Psr\Message
+ */
 class RequestTest extends RequestIntegrationTest
 {
     /**
      * Create request.
      *
-     * @return RequestInterface
+     * @return Request|RequestInterface
      */
-    public function createSubject(): RequestInterface
+    public function createSubject(): Request
     {
         return (new RequestFactory())->createRequest('GET', '/');
-    }
-
-    /**
-     * Build stream.
-     *
-     * @param string $data
-     * @return Stream|StreamInterface
-     */
-    protected function buildStream($data): Stream
-    {
-        return new Stream($data);
     }
 }

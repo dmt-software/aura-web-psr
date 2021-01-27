@@ -16,6 +16,8 @@ trait MessageTrait
 {
     /** @var StreamInterface $body */
     private $body;
+    /** @var AuraRequest|AuraResponse $object */
+    private $object;
 
     /**
      * @return AuraRequest|AuraResponse

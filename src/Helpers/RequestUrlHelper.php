@@ -16,36 +16,20 @@ class RequestUrlHelper extends RequestUrl implements PropertyAccessorInterface
     use PropertyAccessorTrait;
 
     /**
-     * Set a value inside request url.
+     * Access a property.
      *
-     * @param int|array $component
-     * @param string|null $value
-     */
-    public function set($component, string $value = null)
-    {
-        if (is_array($component)) {
-            $this->object->parts = $component;
-            $this->schemeIsSecure($this->object->parts['scheme'] ?? '');
-            return;
-        }
-
-        $key = $this->keys[$component] ?? $component;
-        if ($key !== null) {
-            $this->object->parts[$key] = $value;
-        }
-
-        if ($key === 'scheme') {
-            $this->schemeIsSecure($value);
-        }
-    }
-
-    /**
-     * Set the url as secure when scheme is set to https.
+     * @param string $property the property to access.
+     * @param mixed|null $default the default value.
      *
-     * @param string $scheme
+     * @return mixed
+     * @throws \InvalidArgumentException when property does not exists
      */
-    protected function schemeIsSecure(string $scheme): void
+    public function getObjectProperty($property, $default = null)
     {
-        $this->object->secure = stripos($scheme, 'https') === 0;
+        if (!property_exists($this->object, $property)) {
+            throw new \InvalidArgumentException('property does not exists');
+        }
+
+        return $this->object->{$property} ?? $default;
     }
 }

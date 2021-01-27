@@ -4,6 +4,7 @@ namespace DMT\Aura\Psr\Message;
 
 use Aura\Web\Exception\InvalidStatusCode;
 use Aura\Web\Response as AuraResponse;
+use Aura\Web\WebFactory;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -15,16 +16,15 @@ class Response implements ResponseInterface
 {
     use MessageTrait;
 
-    /** @var AuraResponse $object */
-    private $object;
-
     /**
      * Response constructor.
-     * @param AuraResponse $response
+     *
+     * @param int $code
+     * @param string $reasonPhrase
      */
-    public function __construct(AuraResponse $response)
+    public function __construct(int $code = 200, string $reasonPhrase = '')
     {
-        $this->object = $response;
+        $this->getInnerObject()->status->set($code, $reasonPhrase);
     }
 
     /**
@@ -32,6 +32,9 @@ class Response implements ResponseInterface
      */
     public function getInnerObject(): AuraResponse
     {
+        if (!$this->object) {
+            $this->object = (new WebFactory([]))->newResponse();
+        }
         return $this->object;
     }
 
@@ -60,13 +63,13 @@ class Response implements ResponseInterface
         }
 
         try {
-            $status = clone($this->getInnerObject()->status);
-            $status->set($code, $reasonPhrase);
+            $instance = clone($this);
+            $instance->getInnerObject()->status->set($code, $reasonPhrase);
+
+            return $instance;
         } catch (InvalidStatusCode $exception) {
             throw new \InvalidArgumentException('invalid status code given');
         }
-
-        return $this->newInstanceWith(compact('status'));
     }
 
     /**
@@ -77,59 +80,5 @@ class Response implements ResponseInterface
     public function getReasonPhrase(): string
     {
         return $this->getInnerObject()->status->getPhrase() ?? '';
-    }
-
-    /**
-     * Get the header container.
-     *
-     * @param array $headerValues
-     * @return array
-     */
-    protected function getHeaderContainer(array $headerValues = []): array
-    {
-        $headers = clone($this->getInnerObject()->headers);
-
-        $headerValues = array_filter(
-            $headerValues,
-            function ($values, $name) use ($headers) {
-                return $headers->get($name) !== $values;
-            },
-            ARRAY_FILTER_USE_BOTH
-        );
-
-        foreach ($headerValues as $header => $values) {
-            $value = is_array($values) ? array_shift($values) : $values;
-            $headers->set($header, $value);
-
-            if (is_array($values)) {
-                foreach ($values as $value) {
-                    $headers->add($header, $value);
-                }
-            }
-        }
-
-        return compact('headers');
-    }
-
-    /**
-     * Ensure the immutability of the response.
-     *
-     * @param array $override
-     * @return self
-     */
-    protected function newInstanceWith(array $override = []): self
-    {
-        $innerResponse = $this->getInnerObject();
-
-        $response = new AuraResponse(
-            $override['status'] ?? clone($innerResponse->status),
-            $override['headers'] ?? clone($innerResponse->headers),
-            clone($innerResponse->cookies),
-            $override['content'] ?? clone($innerResponse->content),
-            clone($innerResponse->cache),
-            clone($innerResponse->redirect)
-        );
-
-        return new static($response);
     }
 }
