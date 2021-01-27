@@ -30,8 +30,7 @@ class Request implements RequestInterface
     public function __construct(string $method, $uri)
     {
         $request = $this->getInnerObject();
-        $server = $request->server;
-        $server['REQUEST_METHOD'] = $method;
+        $this->setObjectProperty($request->method , 'value', $method);
 
         $this->uri = (new UriFactory())->createUri($uri);
         $this->body = (new StreamFactory())->createStream();
