@@ -25,5 +25,8 @@
     "psr-4": {
       "DMT\\Test\\Aura\\Psr\\": "tests/"
     }
+  },
+  "suggest": {
+    "rector/rector": "to migrate any PHP 5.x implementations to meet the package requirements"
   }
 }
