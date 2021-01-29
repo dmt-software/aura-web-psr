@@ -4,7 +4,7 @@
 Aura.Web implementations do not follow [PSR-7](https://www.php-fig.org/psr/psr-7/), the recommendation for HTTP 
 messages. As more and more packages that solve common HTTP message problems do implement this recommendation, it would 
 be nice if these can be used for Aura.Web implementations too. This package will allow you to start implementing PSR-7 
-without changing the library underneath, preserving the current code usage <sup>[1]</sup> to make migration or 
+without changing the library underneath, preserving the current code usage <sup>[1](#1)</sup> to make migration or 
 refactoring easier.
 
 ## Installation
@@ -30,9 +30,30 @@ $serverRequest = new ServerRequest(
     $_SERVER['REQUEST_URI'] ?? '/',
     $_SERVER
 );
+```
+### Handling uploaded files
 
+```php
+use DMT\Aura\Psr\Factory\UploadedFileFactory;
+use DMT\Aura\Psr\Message\ServerRequest;
+use DMT\Aura\Psr\Message\UploadedFile;
+ 
+/** @var ServerRequest $serverRequest */
+$serverRequest = $serverRequest->withUploadedFiles(
+    /** @var UploadedFileFactory $uploadedFileFactory */
+    $uploadedFileFactory->createUploadedFilesFromGlobalFiles($_FILES);
+);
+ 
+// at some later point 
+foreach ($serverRequest->getUploadedFiles() as $uploadedFile) {
+    /** @var UploadedFile $uploadedFile */
+    if ($uploadedFile->getError() === \UPLOAD_ERR_OK) {
+        // ... process the uploaded file
+    }
+}
 ```
 
 
-<a name=1></a>
+
+<a name="1"></a>
 <sup>1: to the best of my ability</sup> 

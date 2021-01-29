@@ -2,8 +2,8 @@
 
 namespace DMT\Aura\Psr\Factory;
 
-use DMT\Aura\Psr\Message\Stream;
 use DMT\Aura\Psr\Message\UploadedFile;
+use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UploadedFileInterface;
@@ -15,6 +15,18 @@ use Psr\Http\Message\UploadedFileInterface;
  */
 class UploadedFileFactory implements UploadedFileFactoryInterface
 {
+    /** @var StreamFactoryInterface $streamFactory */
+    protected $streamFactory;
+
+    /**
+     * UploadedFileFactory constructor.
+     * @param StreamFactoryInterface $streamFactory
+     */
+    public function __construct(StreamFactoryInterface $streamFactory = null)
+    {
+        $this->streamFactory = $streamFactory ?? new StreamFactory();
+    }
+
     /**
      * Create a new uploaded file.
      *
@@ -42,5 +54,69 @@ class UploadedFileFactory implements UploadedFileFactoryInterface
         string $clientMediaType = null
     ): UploadedFileInterface {
         return new UploadedFile($stream, $size, $error, $clientFilename, $clientMediaType);
+    }
+
+    /**
+     * Create uploaded files from $_FILES.
+     *
+     * @param array $uploadedFiles
+     * @return array|UploadedFileInterface[]
+     */
+    public function createUploadedFilesFromGlobalFiles(array $uploadedFiles): array
+    {
+        foreach ($uploadedFiles as $file => &$uploadedFile) {
+            if (!$this->isUploadedFileEntry($uploadedFile)) {
+                $files = [];
+                foreach ($uploadedFile as $key => $values) {
+                    $files[key($values)][$key] = current($values);
+                }
+                $uploadedFile = $this->createUploadedFilesFromGlobalFiles($files);
+            }
+
+            if ($this->isUploadedFileEntry($uploadedFile)) {
+                $uploadedFile = $this->asUploadedFileInstance($uploadedFile);
+            }
+        }
+        return $uploadedFiles;
+    }
+
+    private function isUploadedFileEntry($uploadedFileEntry): bool
+    {
+        if (!is_array($uploadedFileEntry) || !array_key_exists('tmp_name', $uploadedFileEntry)) {
+            return false;
+        }
+
+        return is_string($uploadedFileEntry['tmp_name']) || is_string(current((array)$uploadedFileEntry['tmp_name']));
+    }
+
+    private function asUploadedFileInstance($uploadedFile)
+    {
+        if (is_array($uploadedFile['tmp_name'])) {
+            return array_map([$this, __FUNCTION__], $this->normalizeUploadedFileArray($uploadedFile));
+        }
+
+        return $this->createUploadedFile(
+            $this->streamFactory->createStreamFromFile($uploadedFile['tmp_name']),
+            $uploadedFile['size'] ?? null,
+            $uploadedFile['error'] ?? null,
+            $uploadedFile['name'] ?? null,
+            $uploadedFile['type'] ?? null
+        );
+    }
+
+    private function normalizeUploadedFileArray(array $uploadedFile)
+    {
+        if (!is_string($uploadedFile['tmp_name'])) {
+            $files = [];
+            for ($i = 0; $i < count($uploadedFile['tmp_name']); $i++) {
+                $files[$i] = [];
+                foreach ($uploadedFile as $key => $value) {
+                    $files[$i][$key] = $value[$i] ?? null;
+                }
+            }
+            $uploadedFile = $files;
+        }
+
+        return $uploadedFile;
     }
 }

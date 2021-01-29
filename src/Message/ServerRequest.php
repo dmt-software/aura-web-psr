@@ -126,10 +126,27 @@ class ServerRequest extends Request implements ServerRequestInterface
     public function withUploadedFiles(array $uploadedFiles): self
     {
         $files = [];
-        foreach ($uploadedFiles as $name => &$uploadedFile) {
+        $uploadedFiles = $this->checkUploadedFiles($uploadedFiles, $files);
+
+        $instance = clone($this);
+        $instance->uploadedFiles = $uploadedFiles;
+        $instance->getInnerObject()->files->exchangeArray($files);
+
+        return $instance;
+    }
+
+    public function checkUploadedFiles($uploadedFiles, &$entry)
+    {
+        foreach ($uploadedFiles as $file => &$uploadedFile) {
+            if (is_array($uploadedFile)) {
+                $uploadedFile = $this->checkUploadedFiles($uploadedFile, $entry[$file]);
+                continue;
+            }
+
             if (!$uploadedFile instanceof UploadedFileInterface) {
                 throw new \InvalidArgumentException('illegal uploaded file entry');
             }
+
             if (!$uploadedFile instanceof UploadedFile) {
                 $uploadedFile = new UploadedFile(
                     new Stream($uploadedFile->getStream()->detach()),
@@ -139,14 +156,11 @@ class ServerRequest extends Request implements ServerRequestInterface
                     $uploadedFile->getClientMediaType()
                 );
             }
-            $files[$name] = $uploadedFile->getInnerObject()->getArrayCopy();
+
+            $entry[$file] = $uploadedFile->getInnerObject()->getArrayCopy();
         }
 
-        $instance = clone($this);
-        $instance->uploadedFiles = $uploadedFiles;
-        $instance->getInnerObject()->files->exchangeArray($files);
-
-        return $instance;
+        return $uploadedFiles;
     }
 
     /**
