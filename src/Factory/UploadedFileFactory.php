@@ -65,21 +65,34 @@ class UploadedFileFactory implements UploadedFileFactoryInterface
     public function createUploadedFilesFromGlobalFiles(array $uploadedFiles): array
     {
         foreach ($uploadedFiles as $file => &$uploadedFile) {
-            if (!$this->isUploadedFileEntry($uploadedFile)) {
+            if (!is_array($uploadedFile) || !array_key_exists('tmp_name', $uploadedFile)) {
+                continue;
+            }
+
+            if (is_array($uploadedFile['tmp_name'])) {
                 $files = [];
                 foreach ($uploadedFile as $key => $values) {
-                    $files[key($values)][$key] = current($values);
+                    if (is_string(key($values))) {
+                        $files[key($values)][$key] = current($values);
+                    }
                 }
-                $uploadedFile = $this->createUploadedFilesFromGlobalFiles($files);
+                if ($files) {
+                    $uploadedFile = $this->createUploadedFilesFromGlobalFiles($files);
+                }
             }
 
             if ($this->isUploadedFileEntry($uploadedFile)) {
                 $uploadedFile = $this->asUploadedFileInstance($uploadedFile);
             }
         }
+
         return $uploadedFiles;
     }
 
+    /**
+     * @param array $uploadedFileEntry
+     * @return bool
+     */
     private function isUploadedFileEntry($uploadedFileEntry): bool
     {
         if (!is_array($uploadedFileEntry) || !array_key_exists('tmp_name', $uploadedFileEntry)) {
@@ -89,21 +102,35 @@ class UploadedFileFactory implements UploadedFileFactoryInterface
         return is_string($uploadedFileEntry['tmp_name']) || is_string(current((array)$uploadedFileEntry['tmp_name']));
     }
 
+    /**
+     * @param array $uploadedFile
+     * @return array|UploadedFileInterface
+     */
     private function asUploadedFileInstance($uploadedFile)
     {
         if (is_array($uploadedFile['tmp_name'])) {
             return array_map([$this, __FUNCTION__], $this->normalizeUploadedFileArray($uploadedFile));
         }
 
+        if ($uploadedFile['error'] === UPLOAD_ERR_OK) {
+            $stream = $this->streamFactory->createStreamFromFile($uploadedFile['tmp_name']);
+        } else {
+            $stream = $this->streamFactory->createStream('');
+        }
+
         return $this->createUploadedFile(
-            $this->streamFactory->createStreamFromFile($uploadedFile['tmp_name']),
+            $stream,
             $uploadedFile['size'] ?? null,
-            $uploadedFile['error'] ?? null,
+            $uploadedFile['error'] ?? UPLOAD_ERR_OK,
             $uploadedFile['name'] ?? null,
             $uploadedFile['type'] ?? null
         );
     }
 
+    /**
+     * @param array $uploadedFile
+     * @return array
+     */
     private function normalizeUploadedFileArray(array $uploadedFile)
     {
         if (!is_string($uploadedFile['tmp_name'])) {
