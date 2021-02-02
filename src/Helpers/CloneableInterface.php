@@ -14,13 +14,9 @@ namespace DMT\Aura\Psr\Helpers;
 interface CloneableInterface
 {
     /**
-     * Get a cloned version of an object.
+     * Clone an object.
      *
-     * @param object $object instance of the parent for this class.
-     * @param array $overrideProperties list of properties to override.
-     *
-     * @return object a cloned version of the object with the overridden properties.
-     * @throws \RuntimeException on failure to clone the incoming object.
+     * @return object
      */
-    public function clonedWith($object, array $overrideProperties =[]);
+    public function cloneObject();
 }

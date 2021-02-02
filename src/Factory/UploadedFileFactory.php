@@ -53,6 +53,10 @@ class UploadedFileFactory implements UploadedFileFactoryInterface
         string $clientFilename = null,
         string $clientMediaType = null
     ): UploadedFileInterface {
+        if (!$stream->isReadable()) {
+            throw new \InvalidArgumentException('file can not be read');
+        }
+
         return new UploadedFile($stream, $size, $error, $clientFilename, $clientMediaType);
     }
 

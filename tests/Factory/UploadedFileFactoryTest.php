@@ -19,6 +19,16 @@ class UploadedFileFactoryTest extends TestCase
         $this->assertSame($stream, $uploadedFile->getStream());
     }
 
+    public function testCreateUnreadableUploadedFile()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        (new UploadedFileFactory())
+            ->createUploadedFile(
+                new Stream(fopen('php://output', 'w'))
+            );
+    }
+
     /**
      * This tests create from uploaded files populated from <input type=file name=file>
      */
@@ -108,5 +118,31 @@ class UploadedFileFactoryTest extends TestCase
         $this->assertSame($files['import']['type']['file'], $uploadedFiles['import']['file']->getClientMediaType());
         $this->assertSame($files['import']['error']['file'], $uploadedFiles['import']['file']->getError());
         $this->assertSame($files['import']['size']['file'], $uploadedFiles['import']['file']->getSize());
+    }
+
+    public function testCreateUploadedFilesFromEmptyFile()
+    {
+        $files = [
+            'file' => [
+                'name' => '',
+                'type' => '',
+                'tmp_name' => '',
+                'error' => \UPLOAD_ERR_NO_FILE,
+                'size' => null,
+            ]
+        ];
+
+        $uploadedFiles = (new UploadedFileFactory())->createUploadedFilesFromGlobalFiles($files);
+
+        $this->assertInstanceOf(UploadedFileInterface::class, $uploadedFiles['file']);
+
+        $this->assertSame($files['file']['error'], $uploadedFiles['file']->getError());
+        $this->assertEmpty($uploadedFiles['file']->getClientFilename());
+        $this->assertEmpty($uploadedFiles['file']->getClientMediaType());
+        $this->assertEmpty($uploadedFiles['file']->getSize());
+
+        $this->expectException(\RuntimeException::class);
+
+        $uploadedFiles['file']->getStream(); // do not stream from erroneous files.
     }
 }
