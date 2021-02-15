@@ -35,6 +35,6 @@ class UriTest extends UriIntegrationTest
      */
     public function testPath(UriInterface $uri, $expected)
     {
-        $this->assertEqualsIgnoringCase($expected, $uri->getPath());
+        $this->assertTrue(strcasecmp($expected, $uri->getPath()) === 0);
     }
 }
