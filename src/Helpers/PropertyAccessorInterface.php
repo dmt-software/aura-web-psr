@@ -2,6 +2,8 @@
 
 namespace DMT\Aura\Psr\Helpers;
 
+use InvalidArgumentException;
+
 /**
  * Interface PropertyAccessorInterface
  *
@@ -20,7 +22,7 @@ interface PropertyAccessorInterface
      * @param mixed|null $value the value to set.
      *
      * @return void
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function setObjectProperty($property, $value = null);
 }

@@ -3,6 +3,7 @@
 namespace DMT\Aura\Psr\Helpers;
 
 use Aura\Web\Request\Url as RequestUrl;
+use InvalidArgumentException;
 
 /**
  * Class RequestUrlHelper
@@ -22,12 +23,12 @@ class RequestUrlHelper extends RequestUrl implements PropertyAccessorInterface
      * @param mixed|null $default the default value.
      *
      * @return mixed
-     * @throws \InvalidArgumentException when property does not exists
+     * @throws InvalidArgumentException when property does not exists
      */
     public function getObjectProperty($property, $default = null)
     {
         if (!property_exists($this->object, $property)) {
-            throw new \InvalidArgumentException('property does not exists');
+            throw new InvalidArgumentException('property does not exists');
         }
 
         return $this->object->{$property} ?? $default;

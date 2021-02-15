@@ -3,10 +3,12 @@
 namespace DMT\Aura\Psr\Factory;
 
 use DMT\Aura\Psr\Message\UploadedFile;
+use InvalidArgumentException;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileFactoryInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use const UPLOAD_ERR_OK;
 
 /**
  * Class UploadedFileFactory
@@ -44,17 +46,17 @@ class UploadedFileFactory implements UploadedFileFactoryInterface
      *
      * @return UploadedFileInterface
      *
-     * @throws \InvalidArgumentException If the file resource is not readable.
+     * @throws InvalidArgumentException If the file resource is not readable.
      */
     public function createUploadedFile(
         StreamInterface $stream,
         int $size = null,
-        int $error = \UPLOAD_ERR_OK,
+        int $error = UPLOAD_ERR_OK,
         string $clientFilename = null,
         string $clientMediaType = null
     ): UploadedFileInterface {
         if (!$stream->isReadable()) {
-            throw new \InvalidArgumentException('file can not be read');
+            throw new InvalidArgumentException('file can not be read');
         }
 
         return new UploadedFile($stream, $size, $error, $clientFilename, $clientMediaType);
@@ -119,7 +121,7 @@ class UploadedFileFactory implements UploadedFileFactoryInterface
         if ($uploadedFile['error'] === UPLOAD_ERR_OK) {
             $stream = $this->streamFactory->createStreamFromFile($uploadedFile['tmp_name']);
         } else {
-            $stream = $this->streamFactory->createStream('');
+            $stream = $this->streamFactory->createStream();
         }
 
         return $this->createUploadedFile(

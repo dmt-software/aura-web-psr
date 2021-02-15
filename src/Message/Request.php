@@ -6,6 +6,7 @@ use Aura\Web\Request as AuraRequest;
 use Aura\Web\WebFactory;
 use DMT\Aura\Psr\Factory\StreamFactory;
 use DMT\Aura\Psr\Factory\UriFactory;
+use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UriInterface;
 
@@ -95,12 +96,12 @@ class Request implements RequestInterface
      *
      * @param string $method Case-sensitive method.
      * @return static
-     * @throws \InvalidArgumentException for invalid HTTP methods.
+     * @throws InvalidArgumentException for invalid HTTP methods.
      */
     public function withMethod($method): self
     {
         if (!is_string($method)) {
-            throw new \InvalidArgumentException('Invalid method given');
+            throw new InvalidArgumentException('Invalid method given');
         }
 
         $instance = clone($this);

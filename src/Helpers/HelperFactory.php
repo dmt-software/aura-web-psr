@@ -4,6 +4,7 @@ namespace DMT\Aura\Psr\Helpers;
 
 use Aura\Web\Request as AuraRequest;
 use Aura\Web\Response as AuraResponse;
+use InvalidArgumentException;
 
 /**
  * Class HelperFactory
@@ -21,7 +22,7 @@ class HelperFactory
      *
      * @param object $object the object for which a helper is requested
      * @return object the object helper
-     * @throws \InvalidArgumentException for an unsupported object
+     * @throws InvalidArgumentException for an unsupported object
      */
     public function createHelper($object)
     {
@@ -45,7 +46,7 @@ class HelperFactory
             case AuraResponse\Status::class:
                 return new ResponseStatusHelper($object);
             default:
-                throw new \InvalidArgumentException('unsupported object');
+                throw new InvalidArgumentException('unsupported object');
         }
     }
 }

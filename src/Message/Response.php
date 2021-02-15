@@ -1,10 +1,11 @@
-<?php
+<?php /** @noinspection PhpRedundantCatchClauseInspection */
 
 namespace DMT\Aura\Psr\Message;
 
 use Aura\Web\Exception\InvalidStatusCode;
 use Aura\Web\Response as AuraResponse;
 use Aura\Web\WebFactory;
+use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 
 /**
@@ -54,12 +55,12 @@ class Response implements ResponseInterface
      * @param int $code The 3-digit integer result code to set.
      * @param string $reasonPhrase The reason phrase to use.
      * @return static
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function withStatus($code, $reasonPhrase = ''): self
     {
         if (!is_int($code)) {
-            throw new \InvalidArgumentException('invalid status code given');
+            throw new InvalidArgumentException('invalid status code given');
         }
 
         try {
@@ -68,7 +69,7 @@ class Response implements ResponseInterface
 
             return $instance;
         } catch (InvalidStatusCode $exception) {
-            throw new \InvalidArgumentException('invalid status code given');
+            throw new InvalidArgumentException('invalid status code given');
         }
     }
 

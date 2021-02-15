@@ -2,10 +2,9 @@
 
 namespace DMT\Aura\Psr\Message;
 
-use Aura\Web\Request\Content as RequestContent;
-use Aura\Web\Request\Values;
-use Aura\Web\Response\Content as ResponseContent;
+use InvalidArgumentException;
 use Psr\Http\Message\StreamInterface;
+use RuntimeException;
 
 /**
  * Class Stream
@@ -32,7 +31,7 @@ class Stream implements StreamInterface
     public function __construct($content)
     {
         if (!is_resource($content) && !is_string($content)) {
-            throw new \InvalidArgumentException('content string or resource expected');
+            throw new InvalidArgumentException('content string or resource expected');
         }
 
         $resource = $content;
@@ -54,7 +53,7 @@ class Stream implements StreamInterface
             $this->rewind();
 
             return $this->getContents();
-        } catch (\RuntimeException $exception) {
+        } catch (RuntimeException $exception) {
             return '';
         }
     }
@@ -63,17 +62,17 @@ class Stream implements StreamInterface
      * Returns the remaining contents in a string
      *
      * @return string
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function getContents()
     {
         if (!is_resource($this->resource)) {
-            throw new \RuntimeException('could not read stream');
+            throw new RuntimeException('could not read stream');
         }
 
         $contents = stream_get_contents($this->resource);
         if ($contents === false) {
-            throw new \RuntimeException('error whilst reading stream');
+            throw new RuntimeException('error whilst reading stream');
         }
 
         return $contents;
@@ -126,17 +125,17 @@ class Stream implements StreamInterface
      * Returns the current position of the file read/write pointer
      *
      * @return int Position of the file pointer
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function tell()
     {
         if (!is_resource($this->resource)) {
-            throw new \RuntimeException('could not read stream');
+            throw new RuntimeException('could not read stream');
         }
 
         $result = ftell($this->resource);
         if ($result === false) {
-            throw new \RuntimeException('could not determine stream position');
+            throw new RuntimeException('could not determine stream position');
         }
 
         return $result;
@@ -167,27 +166,27 @@ class Stream implements StreamInterface
      *
      * @param int $offset Stream offset
      * @param int $whence Specifies how the cursor position will be calculated based on the seek offset.
-     * @throws \RuntimeException on failure.
+     * @throws RuntimeException on failure.
      */
     public function seek($offset, $whence = SEEK_SET)
     {
         if (!is_resource($this->resource)) {
-            throw new \RuntimeException('could not read stream');
+            throw new RuntimeException('could not read stream');
         }
 
         if (!$this->isSeekable()) {
-            throw new \RuntimeException('stream is not seekable');
+            throw new RuntimeException('stream is not seekable');
         }
 
         if (fseek($this->resource, $offset, (int)$whence) === -1) {
-            throw new \RuntimeException('unable to seek stream to position');
+            throw new RuntimeException('unable to seek stream to position');
         }
     }
 
     /**
      * Seek to the beginning of the stream.
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function rewind()
     {
@@ -201,7 +200,7 @@ class Stream implements StreamInterface
      */
     public function isWritable()
     {
-        return preg_match('~([acwx]|r(?=b?[\+w]))~', $this->getMetadata('mode')) > 0;
+        return preg_match('~([acwx]|r(?=b?[+w]))~', $this->getMetadata('mode')) > 0;
     }
 
     /**
@@ -209,17 +208,17 @@ class Stream implements StreamInterface
      *
      * @param string $string The string that is to be written.
      * @return int Returns the number of bytes written to the stream.
-     * @throws \RuntimeException on failure.
+     * @throws RuntimeException on failure.
      */
     public function write($string)
     {
         if (!$this->isWritable()) {
-            throw new \RuntimeException('cannot write to stream');
+            throw new RuntimeException('cannot write to stream');
         }
 
         $bytes = fwrite($this->resource, $string);
         if ($bytes === false) {
-            throw new \RuntimeException('error whilst writing to stream');
+            throw new RuntimeException('error whilst writing to stream');
         }
 
         return $bytes;
@@ -240,12 +239,12 @@ class Stream implements StreamInterface
      *
      * @param int $length
      * @return string
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function read($length)
     {
         if (!$this->isReadable()) {
-            throw new \RuntimeException('could not read from stream');
+            throw new RuntimeException('could not read from stream');
         }
 
         if ((int)$length < 1) {
@@ -254,7 +253,7 @@ class Stream implements StreamInterface
 
         $part = fread($this->resource, (int)$length);
         if ($part === false) {
-            throw new \RuntimeException('error whilst reading the stream');
+            throw new RuntimeException('error whilst reading the stream');
         }
 
         return $part;

@@ -3,8 +3,10 @@
 namespace DMT\Aura\Psr\Factory;
 
 use DMT\Aura\Psr\Message\Stream;
+use InvalidArgumentException;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Message\StreamInterface;
+use RuntimeException;
 
 /**
  * Class StreamFactory
@@ -39,17 +41,17 @@ class StreamFactory implements StreamFactoryInterface
      * @param string $mode Mode with which to open the underlying filename/stream.
      *
      * @return StreamInterface
-     * @throws \RuntimeException If the file cannot be opened.
-     * @throws \InvalidArgumentException If the mode is invalid.
+     * @throws RuntimeException If the file cannot be opened.
+     * @throws InvalidArgumentException If the mode is invalid.
      */
     public function createStreamFromFile(string $filename, string $mode = 'r'): StreamInterface
     {
         if (!preg_match(Stream::MODE_READABLE, $mode) && !preg_match(Stream::MODE_WRITEABLE, $mode)) {
-            throw new \InvalidArgumentException('invalid mode');
+            throw new InvalidArgumentException('invalid mode');
         }
 
         if (!$resource = @fopen($filename, $mode)) {
-            throw new \RuntimeException('file cannot be opened');
+            throw new RuntimeException('file cannot be opened');
         }
 
         return new Stream($resource);

@@ -2,8 +2,8 @@
 
 namespace DMT\Aura\Psr\Factory;
 
-use Aura\Web\WebFactory;
 use DMT\Aura\Psr\Message\Uri;
+use InvalidArgumentException;
 use Psr\Http\Message\UriFactoryInterface;
 use Psr\Http\Message\UriInterface;
 
@@ -19,12 +19,12 @@ class UriFactory implements UriFactoryInterface
      *
      * @param string $uri
      * @return UriInterface
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function createUri(string $uri = ''): UriInterface
     {
         if ($uri !== '' && parse_url($uri) === false) {
-            throw new \InvalidArgumentException('illegal uri given');
+            throw new InvalidArgumentException('illegal uri given');
         }
 
         return new Uri($uri);

@@ -5,7 +5,7 @@ namespace DMT\Aura\Psr\Message;
 use Aura\Web\Exception\InvalidComponent;
 use Aura\Web\Request\Url as AuraUrl;
 use DMT\Aura\Psr\Helpers\HelperFactory;
-use DMT\Aura\Psr\Helpers\RequestUrlHelper;
+use InvalidArgumentException;
 use Psr\Http\Message\UriInterface;
 
 /**
@@ -39,7 +39,6 @@ class Uri implements UriInterface
     /**
      * Uri constructor.
      *
-     * @param AuraUrl $requestUrl
      * @param string|null $uri
      */
     public function __construct(string $uri = null)
@@ -182,7 +181,7 @@ class Uri implements UriInterface
 
         $params = array_map([$this, 'decode'], $params);
 
-        return preg_replace('~\=(\&|$)~', "$1", http_build_query($params, '', '&', PHP_QUERY_RFC3986));
+        return preg_replace('~=(&|$)~', "$1", http_build_query($params, '', '&', PHP_QUERY_RFC3986));
     }
 
     /**
@@ -200,12 +199,12 @@ class Uri implements UriInterface
      *
      * @param string $scheme
      * @return static
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function withScheme($scheme): self
     {
         if (!is_string($scheme) || !preg_match('~[a-z]~i', $scheme)) {
-            throw new \InvalidArgumentException('invalid scheme given');
+            throw new InvalidArgumentException('invalid scheme given');
         }
 
         return  $this->urlSet(PHP_URL_SCHEME, strtolower($scheme) . '://');
@@ -221,11 +220,11 @@ class Uri implements UriInterface
     public function withUserInfo($user, $password = null): self
     {
         if (!is_string($user) || $user === '') {
-            throw new \InvalidArgumentException('invalid user given');
+            throw new InvalidArgumentException('invalid user given');
         }
 
         if (!is_string($password) && !is_null($password)) {
-            throw new \InvalidArgumentException('invalid password given');
+            throw new InvalidArgumentException('invalid password given');
         }
 
         return $this
@@ -238,12 +237,12 @@ class Uri implements UriInterface
      *
      * @param string $host
      * @return static
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function withHost($host): self
     {
         if (!is_string($host)) {
-            throw new \InvalidArgumentException('invalid host given');
+            throw new InvalidArgumentException('invalid host given');
         }
 
         return $this->urlSet(PHP_URL_HOST, $host);
@@ -254,7 +253,7 @@ class Uri implements UriInterface
      *
      * @param null|int $port
      * @return static
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function withPort($port): self
     {
@@ -263,7 +262,7 @@ class Uri implements UriInterface
         }
 
         if (!is_int($port) || $port < 1) {
-            throw new \InvalidArgumentException('invalid post given');
+            throw new InvalidArgumentException('invalid post given');
         }
 
         return $this->urlSet(PHP_URL_PORT, $port);
@@ -274,12 +273,12 @@ class Uri implements UriInterface
      *
      * @param string $path
      * @return static
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function withPath($path): self
     {
         if (!is_string($path)) {
-            throw new \InvalidArgumentException('invalid path given');
+            throw new InvalidArgumentException('invalid path given');
         }
 
         return $this->urlSet(PHP_URL_PATH, $path);
@@ -290,12 +289,12 @@ class Uri implements UriInterface
      *
      * @param string $query
      * @return static
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function withQuery($query): self
     {
         if (!is_string($query)) {
-            throw new \InvalidArgumentException('invalid path given');
+            throw new InvalidArgumentException('invalid path given');
         }
 
         return $this->urlSet(PHP_URL_QUERY, $query);
@@ -310,7 +309,7 @@ class Uri implements UriInterface
     public function withFragment($fragment): self
     {
         if (!is_string($fragment)) {
-            throw new \InvalidArgumentException('invalid fragment given');
+            throw new InvalidArgumentException('invalid fragment given');
         }
 
         return $this->urlSet(PHP_URL_FRAGMENT, $fragment);

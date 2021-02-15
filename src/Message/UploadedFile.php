@@ -3,8 +3,11 @@
 namespace DMT\Aura\Psr\Message;
 
 use Aura\Web\Request\Values;
+use InvalidArgumentException;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use RuntimeException;
+use const UPLOAD_ERR_OK;
 
 /**
  * Class UploadedFile
@@ -30,7 +33,7 @@ class UploadedFile implements UploadedFileInterface
     public function __construct(
         StreamInterface $stream,
         int $size = null,
-        int $error = \UPLOAD_ERR_OK,
+        int $error = UPLOAD_ERR_OK,
         string $clientFilename = null,
         string $clientMediaType = null
     ) {
@@ -58,7 +61,7 @@ class UploadedFile implements UploadedFileInterface
      * Retrieve a stream representing the uploaded file.
      *
      * @return StreamInterface
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function getStream(): StreamInterface
     {
@@ -71,18 +74,18 @@ class UploadedFile implements UploadedFileInterface
      * Move the uploaded file to a new location.
      *
      * @param string $targetPath
-     * @throws \InvalidArgumentException
-     * @throws \RuntimeException
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
      */
     public function moveTo($targetPath)
     {
         if (!is_string($targetPath) || $targetPath === '') {
-            throw new \InvalidArgumentException('invalid target path');
+            throw new InvalidArgumentException('invalid target path');
         }
 
         $target = fopen($targetPath, 'w');
         if ($target === false) {
-            throw new \RuntimeException('target is not writeable');
+            throw new RuntimeException('target is not writeable');
         }
 
         $stream = $this->getStream();
@@ -90,7 +93,7 @@ class UploadedFile implements UploadedFileInterface
 
         while (!$stream->eof()) {
             if (fwrite($target, $stream->read(8196)) === false) {
-                throw new \RuntimeException('error whilst writing to target');
+                throw new RuntimeException('error whilst writing to target');
             }
         }
 
@@ -140,16 +143,16 @@ class UploadedFile implements UploadedFileInterface
     /**
      * Validate the stream.
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     private function validateStream()
     {
         if ($this->getError() !== UPLOAD_ERR_OK) {
-            throw new \RuntimeException('file contains errors');
+            throw new RuntimeException('file contains errors');
         }
 
         if (!$this->stream->isReadable()) {
-            throw new \RuntimeException('file cannot be read');
+            throw new RuntimeException('file cannot be read');
         }
     }
 }

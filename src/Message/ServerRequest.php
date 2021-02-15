@@ -2,10 +2,13 @@
 
 namespace DMT\Aura\Psr\Message;
 
+use ArrayObject;
 use Aura\Web\Request as AuraRequest;
+use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriInterface;
+use stdClass;
 
 /**
  * Class ServerRequest
@@ -121,7 +124,7 @@ class ServerRequest extends Request implements ServerRequestInterface
      *
      * @param array|UploadedFileInterface[] $uploadedFiles
      * @return static
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function withUploadedFiles(array $uploadedFiles): self
     {
@@ -144,7 +147,7 @@ class ServerRequest extends Request implements ServerRequestInterface
             }
 
             if (!$uploadedFile instanceof UploadedFileInterface) {
-                throw new \InvalidArgumentException('illegal uploaded file entry');
+                throw new InvalidArgumentException('illegal uploaded file entry');
             }
 
             if (!$uploadedFile instanceof UploadedFile) {
@@ -174,7 +177,7 @@ class ServerRequest extends Request implements ServerRequestInterface
     {
         $data = $this->getInnerObject()->post->get();
 
-        if ((\ArrayObject::ARRAY_AS_PROPS & $this->getInnerObject()->post->getFlags()) > 0) {
+        if ((ArrayObject::ARRAY_AS_PROPS & $this->getInnerObject()->post->getFlags()) > 0) {
             return (object)$data;
         }
 
@@ -186,19 +189,19 @@ class ServerRequest extends Request implements ServerRequestInterface
      *
      * @param null|array|object $data
      * @return static
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function withParsedBody($data): self
     {
-        if (!is_null($data) && !is_array($data) && !$data instanceof \stdClass) {
-            throw new \InvalidArgumentException('unsupported body type used');
+        if (!is_null($data) && !is_array($data) && !$data instanceof stdClass) {
+            throw new InvalidArgumentException('unsupported body type used');
         }
 
         $instance = clone($this);
         $instance->getInnerObject()->post->exchangeArray((array)$data);
 
         if (is_object($data)) {
-            $instance->getInnerObject()->post->setFlags(\ArrayObject::ARRAY_AS_PROPS);
+            $instance->getInnerObject()->post->setFlags(ArrayObject::ARRAY_AS_PROPS);
         }
 
         return $instance;

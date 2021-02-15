@@ -5,6 +5,7 @@ namespace DMT\Aura\Psr\Message;
 use Aura\Web\Request as AuraRequest;
 use Aura\Web\Response as AuraResponse;
 use DMT\Aura\Psr\Helpers\HelperFactory;
+use InvalidArgumentException;
 use Psr\Http\Message\StreamInterface;
 
 /**
@@ -145,16 +146,16 @@ trait MessageTrait
      * @param string $name Case-insensitive header field name.
      * @param string|string[] $value Header value(s).
      * @return static
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function withHeader($name, $value): self
     {
         if (!is_string($name) || $name === '' || !preg_match('~^[a-z\-]+$~i', $name)) {
-            throw new \InvalidArgumentException('invalid header name');
+            throw new InvalidArgumentException('invalid header name');
         }
 
         if ((!is_string($value) && !is_array($value)) || $value === []) {
-            throw new \InvalidArgumentException('invalid header value');
+            throw new InvalidArgumentException('invalid header value');
         }
 
         $headers = $this->getHeaders();
@@ -183,7 +184,7 @@ trait MessageTrait
      * @param string $name Case-insensitive header field name to add.
      * @param string|string[] $value Header value(s).
      * @return static
-     * @throws \InvalidArgumentException for invalid header names or values.
+     * @throws InvalidArgumentException for invalid header names or values.
      */
     public function withAddedHeader($name, $value): self
     {
@@ -203,7 +204,7 @@ trait MessageTrait
     public function withoutHeader($name): self
     {
         if (!is_string($name) || $name === '' || !preg_match('~[a-z\-]~i', $name)) {
-            throw new \InvalidArgumentException('invalid header name');
+            throw new InvalidArgumentException('invalid header name');
         }
 
         $headers = $this->getHeaders();
@@ -237,7 +238,7 @@ trait MessageTrait
      *
      * @param StreamInterface $body
      * @return static
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function withBody(StreamInterface $body): self
     {
@@ -275,7 +276,7 @@ trait MessageTrait
         }
 
         if (!is_array($value) || empty($value)) {
-            throw new \InvalidArgumentException('invalid header value');
+            throw new InvalidArgumentException('invalid header value');
         }
 
         return $value;

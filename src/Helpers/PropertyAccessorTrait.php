@@ -2,6 +2,8 @@
 
 namespace DMT\Aura\Psr\Helpers;
 
+use InvalidArgumentException;
+
 /**
  * Trait PropertyAccessorTrait
  *
@@ -29,12 +31,12 @@ trait PropertyAccessorTrait
      * @param mixed|null $value the value to set.
      *
      * @return void
-     * @throws \InvalidArgumentException when property does not exists
+     * @throws InvalidArgumentException when property does not exists
      */
     public function setObjectProperty($property, $value = null)
     {
         if (!property_exists($this->object, $property)) {
-            throw new \InvalidArgumentException('property does not exists');
+            throw new InvalidArgumentException('property does not exists');
         }
 
         $this->object->{$property} = $value;
