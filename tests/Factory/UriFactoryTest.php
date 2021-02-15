@@ -3,6 +3,7 @@
 namespace DMT\Test\Aura\Psr\Factory;
 
 use DMT\Aura\Psr\Factory\UriFactory;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\UriInterface;
 
@@ -41,7 +42,7 @@ class UriFactoryTest extends TestCase
      */
     public function testCreateInvalidUri(string $uri)
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         (new UriFactory())->createUri($uri);
     }

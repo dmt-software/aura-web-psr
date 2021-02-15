@@ -3,8 +3,10 @@
 namespace DMT\Test\Aura\Psr\Factory;
 
 use DMT\Aura\Psr\Factory\StreamFactory;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\StreamInterface;
+use RuntimeException;
 
 class StreamFactoryTest extends TestCase
 {
@@ -23,7 +25,7 @@ class StreamFactoryTest extends TestCase
 
     public function testCreateStreamFromFileIncorrectMode()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $file = tempnam(sys_get_temp_dir(), 'php');
 
@@ -32,9 +34,9 @@ class StreamFactoryTest extends TestCase
 
     public function testCreateStreamFromUnreadableFile()
     {
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
-        (new StreamFactory())->createStreamFromFile('missing-file', 'r');
+        (new StreamFactory())->createStreamFromFile('missing-file');
     }
 
     public function testCreateStreamFromResource()

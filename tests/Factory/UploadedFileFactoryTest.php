@@ -4,9 +4,13 @@ namespace DMT\Test\Aura\Psr\Factory;
 
 use DMT\Aura\Psr\Factory\UploadedFileFactory;
 use DMT\Aura\Psr\Message\Stream;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use RuntimeException;
+use const UPLOAD_ERR_NO_FILE;
+use const UPLOAD_ERR_OK;
 
 class UploadedFileFactoryTest extends TestCase
 {
@@ -21,7 +25,7 @@ class UploadedFileFactoryTest extends TestCase
 
     public function testCreateUnreadableUploadedFile()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         (new UploadedFileFactory())
             ->createUploadedFile(
@@ -42,7 +46,7 @@ class UploadedFileFactoryTest extends TestCase
                 'name' => 'image.png',
                 'type' => 'image/png',
                 'tmp_name' => $tmp,
-                'error' => \UPLOAD_ERR_OK,
+                'error' => UPLOAD_ERR_OK,
                 'size' => 10,
             ]
         ];
@@ -105,7 +109,7 @@ class UploadedFileFactoryTest extends TestCase
                 'name' => ['file' => 'import.csv'],
                 'type' => ['file' => 'plain/text'],
                 'tmp_name' => ['file' => $tmp],
-                'error' => ['file' => \UPLOAD_ERR_OK],
+                'error' => ['file' => UPLOAD_ERR_OK],
                 'size' => ['file' => 0],
             ]
         ];
@@ -127,7 +131,7 @@ class UploadedFileFactoryTest extends TestCase
                 'name' => '',
                 'type' => '',
                 'tmp_name' => '',
-                'error' => \UPLOAD_ERR_NO_FILE,
+                'error' => UPLOAD_ERR_NO_FILE,
                 'size' => null,
             ]
         ];
@@ -141,7 +145,7 @@ class UploadedFileFactoryTest extends TestCase
         $this->assertEmpty($uploadedFiles['file']->getClientMediaType());
         $this->assertEmpty($uploadedFiles['file']->getSize());
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
 
         $uploadedFiles['file']->getStream(); // do not stream from erroneous files.
     }

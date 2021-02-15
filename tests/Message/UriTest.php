@@ -30,6 +30,8 @@ class UriTest extends UriIntegrationTest
      * Overridden, percent-encoding should be case insensitively tested, the original test is not.
      *
      * @dataProvider getPaths
+     * @param UriInterface $uri
+     * @param string $expected
      */
     public function testPath(UriInterface $uri, $expected)
     {
