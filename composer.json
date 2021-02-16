@@ -1,5 +1,7 @@
 {
   "name": "dmt-software/aura-web-psr",
+  "description": "PSR-7 wrapper for Aura.Web implementations",
+  "license": "MIT",
   "authors": [
     {
       "name": "Bas de Mes",

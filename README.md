@@ -1,5 +1,11 @@
 # Aura Web PSR-7 wrapper
 
+[![Latest Stable Version](https://poser.pugx.org/dmt-software/aura-web-psr/v/stable)](https://packagist.org/packages/dmt-software/aura-web-psr)
+[![Build Status](https://travis-ci.com/dmt-software/aura-web-psr.svg?branch=master)](https://travis-ci.com/dmt-software/aura-web-psr)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/dmt-software/aura-web-psr/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/dmt-software/aura-web-psr/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/dmt-software/aura-web-psr/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/dmt-software/aura-web-psr/?branch=master)
+[![License](https://poser.pugx.org/dmt-software/aura-web-psr/license)](https://packagist.org/packages/dmt-software/aura-web-psr)
+
 ## Introduction
 Aura.Web implementations do not follow [PSR-7](https://www.php-fig.org/psr/psr-7/), the recommendation for HTTP 
 messages. As more and more packages that solve common HTTP message problems do implement this recommendation, it would 
@@ -15,12 +21,13 @@ refactoring easier.
   
 
 ### Using composer
-```composer require dmt-software/aura-web-psr```
 
+```composer require dmt-software/aura-web-psr```
 
 ## Usage
 
 ### Creating a ServerRequest
+
 ```php
 use DMT\Aura\Psr\Message\ServerRequest;
  
@@ -31,6 +38,7 @@ $serverRequest = new ServerRequest(
     $_SERVER
 );
 ```
+
 ### Handling uploaded files
 
 ```php
@@ -53,6 +61,14 @@ foreach ($serverRequest->getUploadedFiles() as $uploadedFile) {
 }
 ```
 
+### Creating a Response
+
+```php
+use DMT\Aura\Psr\Message\Response;
+ 
+$response = new Response(200, 'Ok');
+$response->getBody()->write(/** your response html */);
+```
 
 
 <a name="1"></a>
