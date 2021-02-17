@@ -49,7 +49,7 @@ use DMT\Aura\Psr\Message\UploadedFile;
 /** @var ServerRequest $serverRequest */
 $serverRequest = $serverRequest->withUploadedFiles(
     /** @var UploadedFileFactory $uploadedFileFactory */
-    $uploadedFileFactory->createUploadedFilesFromGlobalFiles($_FILES);
+    $uploadedFileFactory->createUploadedFilesFromGlobalFiles($_FILES)
 );
  
 // at some later point 
