@@ -11,7 +11,7 @@ Aura.Web implementations do not follow [PSR-7](https://www.php-fig.org/psr/psr-7
 messages. As more and more packages that solve common HTTP message problems do implement this recommendation, it would 
 be nice if these can be used for Aura.Web implementations too. This package will allow you to start implementing PSR-7 
 without changing the library underneath, preserving the current code usage <sup>[1](#1)</sup> to make migration or 
-refactoring easier.
+[refactoring](usage during migration) easier.
 
 ## Installation
 
@@ -69,6 +69,30 @@ use DMT\Aura\Psr\Message\Response;
 $response = new Response(200, 'Ok');
 $response->getBody()->write(/** your response html */);
 ```
+
+## Usage during migration 
+
+### Immutability
+
+All PSR-7 http-messages wrap an Aura.Web object. According to their responsibility this can be any of the request or 
+response objects. Changes to the http-messages will be internally tracked by the wrapped objects, but in such a way that
+the immutability of the message is preserved. This means each change that is made to a message object will return a new 
+Aura.Web object instance. 
+```php
+use DMT\Aura\Psr\Message\ServerRequest;
+ 
+/** @var ServerRequest $serverRequest */ 
+$auraRequest = $serverRequest->getInnerObject();
+
+$newAuraRequest = $serverRequest
+    ->withProtocolVersion('2')
+    ->getInnerObject();
+
+if ($auraRequest->server->get('SERVER_PROTOCOL') != $newAuraRequest->server->get('SERVER_PROTOCOL')) {
+    print 'Protocol version has changed';
+}
+```
+ 
 
 
 <a name="1"></a>
