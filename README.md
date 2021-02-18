@@ -117,6 +117,9 @@ if ($auraRequest->server->get('SERVER_PROTOCOL') != $newAuraRequest->server->get
  
 ### Incompatibility
 
+Some build in solutions, like uploading files, receiving a json post, etc are not available when this package is used.
+For an overview of how to cope with these discrepancies see the [compatibility](/docs/compatibility.md) documentation.
+
 That http-messages use (a part of) the Aura.Web objects does not mean it is true the other way around. Some aura objects
 are not managed by the http-messages. For managing these objects one can fallback to the original code (once the inner
 object is retrieved) or use/write some additional code that works similar. See the [workarounds](/docs/workarounds.md) 
