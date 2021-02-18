@@ -2,7 +2,10 @@ build:
   tests:
     override:
       -
-        command: 'vendor/bin/phpunit tests --configuration phpunit.xml.dist'
+        command: 'vendor/bin/phpunit tests --configuration phpunit.xml.dist --coverage-clover=coverage.xml'
+        coverage:
+          file: coverage.xml
+          format: clover
   nodes:
     tests: true
     analysis:
