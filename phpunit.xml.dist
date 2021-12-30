@@ -1,29 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<phpunit backupGlobals="false"
-         backupStaticAttributes="false"
-         bootstrap="vendor/autoload.php"
-         colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="false">
-
-    <testsuites>
-        <testsuite name="Test Suite">
-            <directory>./tests/</directory>
-        </testsuite>
-    </testsuites>
-    <filter>
-        <whitelist>
-            <directory>./src/</directory>
-        </whitelist>
-    </filter>
-    <php>
-        <server name="REQUEST_METHOD" value="GET"/>
-        <const name="STREAM_FACTORY" value="DMT\Aura\Psr\Factory\StreamFactory"/>
-        <const name="URI_FACTORY" value="DMT\Aura\Psr\Factory\UriFactory"/>
-        <const name="UPLOADED_FILE_FACTORY" value="DMT\Aura\Psr\Factory\UploadedFileFactory"/>
-    </php>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" backupGlobals="false" backupStaticAttributes="false" bootstrap="vendor/autoload.php" colors="true" convertErrorsToExceptions="true" convertNoticesToExceptions="true" convertWarningsToExceptions="true" processIsolation="false" stopOnFailure="false" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+  <coverage>
+    <include>
+      <directory>./src/</directory>
+    </include>
+  </coverage>
+  <testsuites>
+    <testsuite name="Test Suite">
+      <directory>./tests/</directory>
+    </testsuite>
+  </testsuites>
+  <php>
+    <server name="REQUEST_METHOD" value="GET"/>
+    <const name="STREAM_FACTORY" value="DMT\Aura\Psr\Factory\StreamFactory"/>
+    <const name="URI_FACTORY" value="DMT\Aura\Psr\Factory\UriFactory"/>
+    <const name="UPLOADED_FILE_FACTORY" value="DMT\Aura\Psr\Factory\UploadedFileFactory"/>
+  </php>
 </phpunit>
