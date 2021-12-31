@@ -4,7 +4,7 @@ build:
       -
         command: 'vendor/bin/phpunit tests --configuration phpunit.xml.dist --coverage-clover=coverage.xml'
         coverage:
-          file: ../coverage.xml
+          file: coverage.xml
           format: clover
   nodes:
     tests: true
